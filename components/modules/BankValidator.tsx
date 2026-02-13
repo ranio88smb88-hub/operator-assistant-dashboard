@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ShieldCheck, ShieldAlert, CreditCard, UserCheck, Search, Info, RotateCcw } from 'lucide-react';
 
 interface Props {
@@ -20,21 +20,13 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
     const a = adminName.toLowerCase().trim();
     const v = validationName.toLowerCase().trim();
 
-    // Logika Perbandingan Masking:
-    // 1. Panjang karakter harus sama (termasuk spasi)
-    // 2. Setiap karakter non-'x' harus cocok dengan posisi yang sama di adminName
-    // 3. Karakter 'x' dianggap wildcard yang valid untuk karakter apapun
-    
     let isValid = true;
-
     if (a.length !== v.length) {
       isValid = false;
     } else {
       for (let i = 0; i < v.length; i++) {
         const charV = v[i];
         const charA = a[i];
-
-        // Jika bukan 'x', maka karakter harus sama persis
         if (charV !== 'x' && charV !== charA) {
           isValid = false;
           break;
@@ -60,7 +52,6 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
   return (
     <div className="max-w-4xl mx-auto py-4 space-y-6">
       <div className="glass-panel p-8 rounded-[40px] border border-primary-fade relative overflow-hidden">
-        {/* Decorative Background Icon */}
         <div className="absolute -right-10 -top-10 opacity-5 pointer-events-none">
           <CreditCard className="w-64 h-64 text-white" />
         </div>
@@ -70,15 +61,14 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
             <UserCheck className="w-8 h-8 text-[var(--primary-color)]" />
           </div>
           <div>
-            <h3 className="text-2xl font-black font-orbitron text-white uppercase tracking-tighter">Account Name Matcher</h3>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] font-bold">Secure Verification Protocol V2.1</p>
+            <h3 className="text-2xl font-black font-orbitron text-white uppercase tracking-tighter">Account Matcher</h3>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] font-bold">Secure Comparison Protocol</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
           <div className="space-y-3">
             <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center">
-              <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
               Nama Dari Admin (Full Name)
             </label>
             <input 
@@ -87,12 +77,10 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
               className="w-full bg-black/60 border-2 border-white/5 rounded-2xl p-5 text-lg font-bold outline-none focus:border-blue-500 transition-all text-white placeholder:text-zinc-800"
               placeholder="CONTOH: SUSANTI SUSAN"
             />
-            <p className="text-[9px] text-zinc-600 font-bold uppercase italic">Input nama lengkap sesuai data pendaftaran</p>
           </div>
 
           <div className="space-y-3">
             <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex items-center">
-              <span className="w-2 h-2 rounded-full bg-amber-500 mr-2 animate-pulse"></span>
               Nama Validasi (Masked Name)
             </label>
             <input 
@@ -101,7 +89,6 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
               className="w-full bg-black/60 border-2 border-white/5 rounded-2xl p-5 text-lg font-mono outline-none focus:border-amber-500 transition-all text-white placeholder:text-zinc-800"
               placeholder="CONTOH: SUXXXXX SUXXX"
             />
-            <p className="text-[9px] text-zinc-600 font-bold uppercase italic">Gunakan 'x' untuk bagian yang disensor</p>
           </div>
         </div>
 
@@ -123,43 +110,29 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
 
       {status !== 'IDLE' && (
         <div className={`
-          p-10 rounded-[40px] border-2 flex flex-col items-center justify-center text-center space-y-4 animate-in zoom-in-95 duration-500
+          p-12 rounded-[40px] border-4 flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in-95 fade-in duration-500
           ${status === 'VALID' 
-            ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-[0_0_40px_rgba(16,185,129,0.2)]' 
-            : 'bg-rose-500/10 border-rose-500/60 text-rose-500 shadow-[0_0_40px_rgba(244,63,94,0.3)] animate-pulse'
+            ? 'bg-emerald-500/10 border-emerald-500/60 text-emerald-400 shadow-[0_0_60px_rgba(16,185,129,0.3)]' 
+            : 'bg-rose-600/20 border-rose-500 text-rose-500 shadow-[0_0_80px_rgba(244,63,94,0.5)] animate-pulse'
           }
         `}>
-          <div className={`p-6 rounded-full ${status === 'VALID' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+          <div className={`p-8 rounded-full shadow-lg ${status === 'VALID' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
             {status === 'VALID' ? (
-              <ShieldCheck className="w-16 h-16 text-black" />
+              <ShieldCheck className="w-20 h-20 text-black" />
             ) : (
-              <ShieldAlert className="w-16 h-16 text-white" />
+              <ShieldAlert className="w-20 h-20 text-white" />
             )}
           </div>
           <div>
-            <div className="text-5xl font-black font-orbitron tracking-tighter uppercase mb-2">
-              {status === 'VALID' ? 'ACC VERIFIED' : 'MATCH FAILED'}
+            <div className={`text-6xl font-black font-orbitron tracking-tighter uppercase mb-4 ${status === 'INVALID' ? 'animate-bounce' : ''}`}>
+              {status === 'VALID' ? 'VALID' : 'TIDAK VALID'}
             </div>
-            <p className={`text-xs font-black uppercase tracking-[0.4em] ${status === 'VALID' ? 'text-emerald-500/60' : 'text-rose-500/60'}`}>
-              {status === 'VALID' ? 'Semua parameter nama sesuai' : 'Karakter atau panjang nama tidak cocok'}
+            <p className={`text-sm font-black uppercase tracking-[0.5em] ${status === 'VALID' ? 'text-emerald-500/60' : 'text-rose-500/80'}`}>
+              {status === 'VALID' ? 'Verifikasi Nama Sesuai Protocol' : 'Data Karakter Tidak Cocok / Panic Mode'}
             </p>
           </div>
         </div>
       )}
-
-      <div className="p-6 rounded-3xl border border-white/5 bg-black/20">
-        <div className="flex items-start space-x-4">
-          <Info className="w-5 h-5 text-zinc-500 mt-1" />
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Aturan Validasi Nama:</h4>
-            <ul className="text-[10px] text-zinc-600 space-y-1 font-bold">
-              <li>• PANJANG KARAKTER HARUS SAMA PERSIS (TERMASUK SPASI).</li>
-              <li>• GUNAKAN HURUF KECIL 'x' UNTUK KARAKTER YANG DISENSOR.</li>
-              <li>• KARAKTER YANG TIDAK DISENSOR HARUS COCOK DENGAN POSISI DI NAMA ADMIN.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
