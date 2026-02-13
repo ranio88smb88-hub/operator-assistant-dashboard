@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Copy, Sparkles, RefreshCw } from 'lucide-react';
 import { SYAIR_SENTENCES } from '../../constants';
 
 interface Props {
-  showToast: (msg: string) => void;
+  showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
 const SyairHoki: React.FC<Props> = ({ showToast }) => {
@@ -24,6 +23,7 @@ temukan angka di balik tabir."
 ━━━━━━━━━━━━━━━━━━━
     `.trim();
     setResult(text);
+    showToast('Mystical syair generated', 'success');
   };
 
   return (
@@ -40,7 +40,7 @@ temukan angka di balik tabir."
         {result && (
           <div className="bg-zinc-950/50 p-8 rounded-2xl border border-purple-500/20 font-serif italic text-lg text-purple-200 whitespace-pre-line relative group">
             <button 
-              onClick={() => { navigator.clipboard.writeText(result); showToast('Syair Copied!'); }}
+              onClick={() => { navigator.clipboard.writeText(result); showToast('Syair Copied!', 'success'); }}
               className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/5 rounded-lg"
             >
               <Copy className="w-4 h-4 text-zinc-400" />
