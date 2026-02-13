@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Copy, RefreshCw } from 'lucide-react';
 
 interface Props {
-  showToast: (msg: string) => void;
+  showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
 const FootballPrediction: React.FC<Props> = ({ showToast }) => {
@@ -17,7 +16,10 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
   const types = ['Over/Under', 'Handicap', '1X2', 'BTTS'];
 
   const generate = () => {
-    if (!homeTeam || !awayTeam) return;
+    if (!homeTeam || !awayTeam) {
+      showToast('Please enter both teams', 'error');
+      return;
+    }
     
     const randomPred = () => {
       switch(type) {
@@ -42,11 +44,12 @@ Good luck & salam JP!
 ━━━━━━━━━━━━━━━━━━━
     `.trim();
     setResult(text);
+    showToast('New prediction generated');
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(result);
-    showToast('Prediction copied to clipboard!');
+    showToast('Prediction copied to clipboard!', 'success');
   };
 
   return (
