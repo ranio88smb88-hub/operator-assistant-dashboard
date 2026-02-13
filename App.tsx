@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ModuleType, AppSettings } from './types';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
+import Navbar from './components/Navbar';
 import FootballPrediction from './components/modules/FootballPrediction';
 import TogelPrediction from './components/modules/TogelPrediction';
 import SyairHoki from './components/modules/SyairHoki';
@@ -38,7 +37,6 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 const App: React.FC = () => {
   const [activeModule, setActiveModule] = useState<ModuleType | 'HOME'>('HOME');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
@@ -82,7 +80,8 @@ const App: React.FC = () => {
     if (module !== 'HOME') {
       localStorage.setItem('last_module', module);
     }
-    setIsSidebarOpen(false);
+    // Scroll to top on module change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const updateSettings = (newSettings: AppSettings) => {
@@ -119,37 +118,35 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#050505]">
+    <div className="relative min-h-screen w-full flex flex-col bg-[#050505]">
       {/* Background Layer */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-lighten pointer-events-none transition-all duration-1000"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-lighten pointer-events-none transition-all duration-1000 z-0"
         style={{ backgroundImage: `url(${settings.bgImage})` }}
       ></div>
       
-      <div className="relative z-10 flex h-full">
-        <Sidebar 
-          activeModule={activeModule} 
-          onModuleChange={handleModuleChange} 
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
+      {/* Navbar Integration */}
+      <Navbar 
+        activeModule={activeModule} 
+        onModuleChange={handleModuleChange}
+        primaryColor={settings.primaryColor}
+      />
 
-        <div className="flex-1 flex flex-col min-w-0">
-          <Header 
-            activeModule={activeModule} 
-            onToggleMenu={() => setIsSidebarOpen(!isSidebarOpen)} 
-            onGoHome={() => handleModuleChange('HOME')}
-          />
-          
-          <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-8">
-            <div className="max-w-7xl mx-auto h-full">
-              {renderContent()}
-            </div>
-          </main>
+      {/* Main Content Area */}
+      <main className="relative z-10 flex-1 overflow-x-hidden p-4 md:p-8">
+        <div className="max-w-[1600px] mx-auto h-full">
+          {renderContent()}
         </div>
-      </div>
+      </main>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* Simple Footer */}
+      <footer className="relative z-10 p-6 text-center border-t border-white/5 bg-black/40">
+        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em]">
+          Cyber-Ops Management Console // Locally Encrypted Protocol
+        </p>
+      </footer>
     </div>
   );
 };
