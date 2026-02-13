@@ -10,7 +10,24 @@ export enum ModuleType {
   FOOTBALL_CALC = 'FOOTBALL_CALC',
   RESULT_VIEWER = 'RESULT_VIEWER',
   NAWALA_CHECK = 'NAWALA_CHECK',
-  SHIO_REF = 'SHIO_REF'
+  SHIO_REF = 'SHIO_REF',
+  SETTINGS = 'SETTINGS'
+}
+
+export interface SliderConfig {
+  title: string;
+  image: string;
+}
+
+export interface AppSettings {
+  primaryColor: string;
+  bgImage: string;
+  fontFamily: string;
+  fontSize: string;
+  tableHeaderBg: string;
+  tableRowBg: string;
+  tableTextColor: string;
+  sliders: Record<string, SliderConfig>;
 }
 
 export interface PasaranData {
