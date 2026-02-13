@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Copy, RefreshCw } from 'lucide-react';
 import { PASARAN_SCHEDULE } from '../../constants';
 
 interface Props {
-  showToast: (msg: string) => void;
+  showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
 const TogelPrediction: React.FC<Props> = ({ showToast }) => {
@@ -34,6 +33,7 @@ Ups & Selalu Tetap UPS!
 ━━━━━━━━━━━━━━━━━━━
     `.trim();
     setResult(text);
+    showToast('Prediction sequence computed');
   };
 
   return (
@@ -74,7 +74,7 @@ Ups & Selalu Tetap UPS!
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Final Script</h3>
           {result && (
-            <button onClick={() => { navigator.clipboard.writeText(result); showToast('Copied!'); }} className="text-xs text-amber-400 hover:text-amber-300 flex items-center">
+            <button onClick={() => { navigator.clipboard.writeText(result); showToast('Copied!', 'success'); }} className="text-xs text-amber-400 hover:text-amber-300 flex items-center">
               <Copy className="w-3 h-3 mr-1" /> Copy
             </button>
           )}
