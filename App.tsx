@@ -56,7 +56,7 @@ const App: React.FC = () => {
     document.body.style.fontFamily = settings.fontFamily;
     document.body.style.fontSize = settings.fontSize;
     
-    // Custom Scrollbar style update
+    // Custom Table Styles injection
     const styleTagId = 'dynamic-app-styles';
     let styleTag = document.getElementById(styleTagId);
     if (!styleTag) {
@@ -65,12 +65,11 @@ const App: React.FC = () => {
       document.head.appendChild(styleTag);
     }
     styleTag.innerHTML = `
-      :root { --primary-color: ${settings.primaryColor}; }
       .neon-text-primary { text-shadow: 0 0 10px ${settings.primaryColor}88; color: ${settings.primaryColor}; }
       .neon-border-primary { border-color: ${settings.primaryColor}; box-shadow: 0 0 10px ${settings.primaryColor}44; }
       table thead tr { background-color: ${settings.tableHeaderBg} !important; }
       table tbody tr { background-color: ${settings.tableRowBg} !important; color: ${settings.tableTextColor} !important; }
-      ::-webkit-scrollbar-thumb { background: ${settings.primaryColor} !important; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: ${settings.primaryColor} !important; }
       .bg-primary-fade { background-color: ${settings.primaryColor}11; }
       .border-primary-fade { border-color: ${settings.primaryColor}33; }
     `;
@@ -120,29 +119,29 @@ const App: React.FC = () => {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col bg-[#050505]">
-      {/* Background Layer - Fixed behind content */}
+      {/* Background Layer */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-lighten pointer-events-none transition-all duration-1000 z-0"
         style={{ backgroundImage: `url(${settings.bgImage})` }}
       ></div>
       
-      {/* Navbar - Sticky at top */}
+      {/* Navbar Integration */}
       <Navbar 
         activeModule={activeModule} 
         onModuleChange={handleModuleChange}
         primaryColor={settings.primaryColor}
       />
 
-      {/* Main Content Area - Fluid growth */}
-      <main className="relative z-10 flex-1 p-4 md:p-8">
-        <div className="max-w-[1600px] mx-auto min-h-full">
+      {/* Main Content Area */}
+      <main className="relative z-10 flex-1 overflow-x-hidden p-4 md:p-8">
+        <div className="max-w-[1600px] mx-auto h-full">
           {renderContent()}
         </div>
       </main>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      {/* Footer */}
+      {/* Simple Footer */}
       <footer className="relative z-10 p-6 text-center border-t border-white/5 bg-black/40">
         <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em]">
           Cyber-Ops Management Console // Locally Encrypted Protocol
