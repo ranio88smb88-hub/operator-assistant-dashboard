@@ -1,0 +1,38 @@
+
+export enum ModuleType {
+  FOOTBALL_PRED = 'FOOTBALL_PRED',
+  TOGEL_PRED = 'TOGEL_PRED',
+  SYAIR_HOKI = 'SYAIR_HOKI',
+  BANK_VALIDATOR = 'BANK_VALIDATOR',
+  PASARAN_SCHEDULE = 'PASARAN_SCHEDULE',
+  PRIZE_CALC = 'PRIZE_CALC',
+  TOGEL_CALC = 'TOGEL_CALC',
+  FOOTBALL_CALC = 'FOOTBALL_CALC',
+  RESULT_VIEWER = 'RESULT_VIEWER',
+  NAWALA_CHECK = 'NAWALA_CHECK',
+  SHIO_REF = 'SHIO_REF'
+}
+
+export interface PasaranData {
+  id: string;
+  name: string;
+  open: string;
+  close: string;
+  result: string;
+  status: 'Open' | 'Closed';
+}
+
+export interface ShioData {
+  name: string;
+  years: string;
+  luckyNumbers: string;
+  element: string;
+  trait: string;
+}
+
+export interface TogelResult {
+  id: string;
+  market: string;
+  date: string;
+  number: string;
+}

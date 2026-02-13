@@ -1,0 +1,5 @@
+{
+  "name": "Operator Assistant Dashboard",
+  "description": "A high-performance personal productivity dashboard for operators, featuring prediction generators, calculators, and administrative tools with a sleek glassmorphism UI.",
+  "requestFramePermissions": []
+}
