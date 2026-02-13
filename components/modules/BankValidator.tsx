@@ -4,7 +4,7 @@ import { ShieldCheck, ShieldAlert, CreditCard } from 'lucide-react';
 import { BANK_PREFIXES } from '../../constants';
 
 interface Props {
-  showToast: (msg: string) => void;
+  showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
 const BankValidator: React.FC<Props> = ({ showToast }) => {
@@ -14,15 +14,21 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
   const validate = () => {
     if (account.length < 8) {
       setValidation({ valid: false, bank: 'Unknown' });
+      showToast('Invalid account length', 'error');
       return;
     }
 
     const prefix = account.substring(0, 3);
     const bank = BANK_PREFIXES[prefix] || 'Generic Bank Account';
     
-    // Simulate some logic
     const isValid = account.length >= 10 && account.length <= 16;
     setValidation({ valid: isValid, bank });
+    
+    if (isValid) {
+      showToast('Account validated successfully', 'success');
+    } else {
+      showToast('Format mismatch detected', 'error');
+    }
   };
 
   const handleInput = (val: string) => {
@@ -33,14 +39,14 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
 
   return (
     <div className="max-w-2xl mx-auto py-8">
-      <div className="glass-card p-8 rounded-3xl space-y-6">
+      <div className="glass-panel p-8 rounded-3xl space-y-6 border border-[#0f0]/20">
         <div className="flex items-center space-x-4">
           <div className="p-3 bg-emerald-500/10 rounded-xl">
             <CreditCard className="w-6 h-6 text-emerald-500" />
           </div>
           <div>
-            <h3 className="text-lg font-bold">Offline Bank Validator</h3>
-            <p className="text-zinc-500 text-xs">Simulate bank verification and type detection.</p>
+            <h3 className="text-lg font-bold font-orbitron text-white uppercase">Bank Validator</h3>
+            <p className="text-zinc-500 text-[10px] tracking-widest uppercase">Offline Protocol Verification</p>
           </div>
         </div>
 
@@ -49,16 +55,16 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
             <input 
               value={account}
               onChange={e => handleInput(e.target.value)}
-              className="w-full bg-zinc-950 border-2 border-white/5 rounded-2xl p-5 text-2xl font-mono tracking-widest outline-none focus:border-blue-500 transition-all placeholder:text-zinc-800"
+              className="w-full bg-black border-2 border-white/5 rounded-2xl p-5 text-2xl font-mono tracking-widest outline-none focus:border-[#0f0] transition-all placeholder:text-zinc-800 text-white"
               placeholder="000 000 0000"
               maxLength={16}
             />
             {account && (
               <button 
                 onClick={validate}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-600 px-6 py-2 rounded-xl text-sm font-bold"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#0f0] text-black px-6 py-2 rounded-xl text-xs font-black font-orbitron hover:bg-white transition-colors"
               >
-                CHECK
+                EXECUTE
               </button>
             )}
           </div>
@@ -71,29 +77,14 @@ const BankValidator: React.FC<Props> = ({ showToast }) => {
                 {validation.valid ? <ShieldCheck className="w-5 h-5 text-white" /> : <ShieldAlert className="w-5 h-5 text-white" />}
               </div>
               <div className="flex-1">
-                <div className="text-xs text-zinc-500 uppercase font-bold tracking-tighter mb-0.5">Detection Result</div>
-                <div className="font-bold text-white text-lg">{validation.bank}</div>
-                <div className={`text-xs font-semibold ${validation.valid ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {validation.valid ? 'NUMBER FORMAT VALIDATED' : 'INVALID ACCOUNT LENGTH / FORMAT'}
+                <div className="text-[9px] text-zinc-500 uppercase font-black tracking-[0.2em] mb-0.5">System Analysis Result</div>
+                <div className="font-bold text-white text-lg font-orbitron">{validation.bank}</div>
+                <div className={`text-[10px] font-black tracking-widest ${validation.valid ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {validation.valid ? 'STATUS: VALIDATED' : 'STATUS: FORMAT ERROR'}
                 </div>
               </div>
             </div>
           )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-zinc-900/50 rounded-xl border border-white/5">
-            <span className="text-[10px] text-zinc-500 uppercase font-bold block mb-1">Known Prefix</span>
-            <div className="flex flex-wrap gap-2">
-              {Object.keys(BANK_PREFIXES).map(p => (
-                <span key={p} className="px-2 py-0.5 bg-white/5 rounded text-[10px] font-mono text-zinc-400">{p}</span>
-              ))}
-            </div>
-          </div>
-          <div className="p-4 bg-zinc-900/50 rounded-xl border border-white/5">
-            <span className="text-[10px] text-zinc-500 uppercase font-bold block mb-1">Standard Length</span>
-            <span className="text-xs text-zinc-300">10 to 16 digits (Numeric)</span>
-          </div>
         </div>
       </div>
     </div>
