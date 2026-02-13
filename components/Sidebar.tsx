@@ -14,7 +14,8 @@ import {
   ShieldAlert, 
   Sparkles,
   X,
-  Home
+  Home,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -41,21 +42,21 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange, isOpen,
 
   return (
     <aside className={`
-      fixed inset-y-0 left-0 z-50 w-64 glass-panel border-r border-[#0f0]/20 flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.3,1)]
+      fixed inset-y-0 left-0 z-50 w-64 glass-panel border-r border-primary-fade flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.3,1)]
       lg:relative lg:translate-x-0
       ${isOpen ? 'translate-x-0' : '-translate-x-full'}
     `}>
-      <div className="p-6 border-b border-[#0f0]/10 flex items-center justify-between">
+      <div className="p-6 border-b border-primary-fade flex items-center justify-between">
         <div>
-          <h1 className="font-orbitron text-xl font-black text-[#0f0] neon-text-green tracking-tighter">
+          <h1 className="font-orbitron text-xl font-black text-[var(--primary-color)] neon-text-primary tracking-tighter">
             CYBER-OPS
           </h1>
           <p className="text-[9px] text-zinc-500 mt-1 uppercase tracking-[0.3em] font-bold">
             V 3.0 // OPERATOR
           </p>
         </div>
-        <button onClick={onClose} className="lg:hidden p-1 hover:bg-[#0f0]/10 rounded border border-[#0f0]/20">
-          <X className="w-5 h-5 text-[#0f0]" />
+        <button onClick={onClose} className="lg:hidden p-1 hover:bg-primary-fade rounded border border-primary-fade">
+          <X className="w-5 h-5 text-[var(--primary-color)]" />
         </button>
       </div>
       
@@ -64,8 +65,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange, isOpen,
           onClick={() => onModuleChange('HOME')}
           className={`w-full flex items-center px-6 py-4 text-xs font-black tracking-widest transition-all duration-300 group ${
             activeModule === 'HOME' 
-              ? 'bg-[#0f0]/10 text-[#0f0] border-r-4 border-[#0f0]' 
-              : 'text-zinc-500 hover:text-[#0f0] hover:bg-[#0f0]/5'
+              ? 'bg-primary-fade text-[var(--primary-color)] border-r-4 border-[var(--primary-color)]' 
+              : 'text-zinc-500 hover:text-[var(--primary-color)] hover:bg-primary-fade'
           }`}
         >
           <Home className="w-4 h-4 mr-4" />
@@ -80,20 +81,34 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange, isOpen,
             onClick={() => onModuleChange(item.type)}
             className={`w-full flex items-center px-6 py-3.5 text-[11px] font-bold transition-all duration-300 group border-b border-white/[0.02] ${
               activeModule === item.type 
-                ? 'bg-[#0f0]/10 text-[#0f0] border-r-4 border-[#0f0]' 
+                ? 'bg-primary-fade text-[var(--primary-color)] border-r-4 border-[var(--primary-color)]' 
                 : 'text-zinc-400 hover:text-white hover:bg-white/5'
             }`}
           >
-            <item.icon className={`w-4 h-4 mr-4 ${activeModule === item.type ? 'text-[#0f0]' : 'text-zinc-600 group-hover:text-zinc-400'}`} />
+            <item.icon className={`w-4 h-4 mr-4 ${activeModule === item.type ? 'text-[var(--primary-color)]' : 'text-zinc-600 group-hover:text-zinc-400'}`} />
             <span className="font-orbitron uppercase tracking-wider">{item.label}</span>
           </button>
         ))}
+
+        <div className="mt-4 pt-4 border-t border-primary-fade">
+          <button
+            onClick={() => onModuleChange(ModuleType.SETTINGS)}
+            className={`w-full flex items-center px-6 py-4 text-xs font-black tracking-widest transition-all duration-300 group ${
+              activeModule === ModuleType.SETTINGS 
+                ? 'bg-primary-fade text-[var(--primary-color)] border-r-4 border-[var(--primary-color)]' 
+                : 'text-zinc-500 hover:text-[var(--primary-color)] hover:bg-primary-fade'
+            }`}
+          >
+            <SettingsIcon className={`w-4 h-4 mr-4 ${activeModule === ModuleType.SETTINGS ? 'text-[var(--primary-color)]' : 'text-zinc-600'}`} />
+            <span className="font-orbitron">SYSTEM SETTINGS</span>
+          </button>
+        </div>
       </nav>
 
-      <div className="p-4 border-t border-[#0f0]/10 bg-black/40">
+      <div className="p-4 border-t border-primary-fade bg-black/40">
         <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest">
            <span className="text-zinc-600">CONNECTION:</span>
-           <span className="text-[#0f0] animate-pulse">ENCRYPTED</span>
+           <span className="text-[var(--primary-color)] animate-pulse">ENCRYPTED</span>
         </div>
       </div>
     </aside>
