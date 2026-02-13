@@ -1,16 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AppSettings, ModuleType } from '../../types';
-import { Settings as SettingsIcon, Palette, Image as ImageIcon, Type, Table, Layout, Save, RotateCcw } from 'lucide-react';
+import { Settings as SettingsIcon, Palette, Image as ImageIcon, Type, Table, Layout, Save, Upload, Check } from 'lucide-react';
 
 interface Props {
   settings: AppSettings;
   onUpdate: (settings: AppSettings) => void;
 }
 
+const BACKGROUND_PRESETS = [
+  { name: 'Cyberpunk Blue', url: 'https://assets.codepen.io/3617690/cyberpunk-bg.png' },
+  { name: 'Neon City', url: 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?q=80&w=2070&auto=format&fit=crop' },
+  { name: 'Digital Rain', url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop' },
+  { name: 'Deep Space', url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop' },
+  { name: 'Abstract Grid', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1887&auto=format&fit=crop' },
+  { name: 'Tech Minimal', url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
+];
+
 export default function Settings({ settings, onUpdate }: Props) {
   const [localSettings, setLocalSettings] = useState<AppSettings>(settings);
   const [activeTab, setActiveTab] = useState<'general' | 'visual' | 'slider'>('general');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (key: keyof AppSettings, value: any) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }));
@@ -24,6 +34,22 @@ export default function Settings({ settings, onUpdate }: Props) {
         [type]: { ...prev.sliders[type], [field]: value }
       }
     }));
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Ukuran file terlalu besar! Max 2MB untuk penyimpanan lokal.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        handleChange('bgImage', base64String);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -41,7 +67,7 @@ export default function Settings({ settings, onUpdate }: Props) {
         <div className="flex space-x-3">
           <button 
             onClick={() => onUpdate(localSettings)}
-            className="bg-[var(--primary-color)] text-black px-6 py-2 rounded-xl font-black font-orbitron text-xs flex items-center hover:opacity-80 transition-all"
+            className="bg-[var(--primary-color)] text-black px-6 py-2 rounded-xl font-black font-orbitron text-xs flex items-center hover:opacity-80 transition-all shadow-[0_0_15px_rgba(var(--primary-color-rgb),0.3)]"
           >
             <Save className="w-4 h-4 mr-2" /> SAVE CHANGES
           </button>
@@ -69,53 +95,96 @@ export default function Settings({ settings, onUpdate }: Props) {
       <div className="glass-panel p-8 rounded-3xl border border-primary-fade space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         
         {activeTab === 'general' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <label className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center">
-                <Palette className="w-4 h-4 mr-2" /> Primary Theme Color
-              </label>
-              <div className="flex items-center space-x-4">
-                <input 
-                  type="color" 
-                  value={localSettings.primaryColor}
-                  onChange={e => handleChange('primaryColor', e.target.value)}
-                  className="w-16 h-16 rounded-xl bg-transparent border-2 border-white/10 cursor-pointer overflow-hidden"
-                />
-                <input 
-                  type="text"
-                  value={localSettings.primaryColor}
-                  onChange={e => handleChange('primaryColor', e.target.value)}
-                  className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 font-mono text-sm text-zinc-300"
-                />
+          <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <label className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center">
+                  <Palette className="w-4 h-4 mr-2" /> Primary Theme Color
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input 
+                    type="color" 
+                    value={localSettings.primaryColor}
+                    onChange={e => handleChange('primaryColor', e.target.value)}
+                    className="w-16 h-16 rounded-xl bg-transparent border-2 border-white/10 cursor-pointer overflow-hidden"
+                  />
+                  <input 
+                    type="text"
+                    value={localSettings.primaryColor}
+                    onChange={e => handleChange('primaryColor', e.target.value)}
+                    className="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 font-mono text-sm text-zinc-300"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center">
+                  <Type className="w-4 h-4 mr-2" /> Global Font Family
+                </label>
+                <select 
+                  value={localSettings.fontFamily}
+                  onChange={e => handleChange('fontFamily', e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 outline-none"
+                >
+                  <option value="'Orbitron', sans-serif">Orbitron (Cyberpunk Default)</option>
+                  <option value="'Inter', sans-serif">Inter (Modern Clean)</option>
+                  <option value="'Courier New', monospace">Mono (Tech/Terminal)</option>
+                </select>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <label className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center">
-                <ImageIcon className="w-4 h-4 mr-2" /> Background Wallpaper (URL)
-              </label>
-              <input 
-                type="text"
-                value={localSettings.bgImage}
-                onChange={e => handleChange('bgImage', e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 outline-none focus:border-[var(--primary-color)]"
-                placeholder="https://image-url.com/bg.png"
-              />
-            </div>
+            {/* Background Settings Section */}
+            <div className="space-y-6 pt-6 border-t border-white/5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center">
+                  <ImageIcon className="w-4 h-4 mr-2 text-[var(--primary-color)]" /> Workspace Background
+                </label>
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all flex items-center"
+                >
+                  <Upload className="w-3 h-3 mr-2" /> Upload Local Image
+                </button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleFileUpload}
+                />
+              </div>
 
-            <div className="space-y-4">
-              <label className="text-xs font-black text-zinc-500 uppercase tracking-widest flex items-center">
-                <Type className="w-4 h-4 mr-2" /> Global Font Family
-              </label>
-              <select 
-                value={localSettings.fontFamily}
-                onChange={e => handleChange('fontFamily', e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 outline-none"
-              >
-                <option value="'Orbitron', sans-serif">Orbitron (Cyberpunk Default)</option>
-                <option value="'Inter', sans-serif">Inter (Modern Clean)</option>
-                <option value="'Courier New', monospace">Mono (Tech/Terminal)</option>
-              </select>
+              <div className="space-y-4">
+                <input 
+                  type="text"
+                  value={localSettings.bgImage}
+                  onChange={e => handleChange('bgImage', e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 outline-none focus:border-[var(--primary-color)] font-mono"
+                  placeholder="Paste URL gambar di sini..."
+                />
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-2">
+                  {BACKGROUND_PRESETS.map((preset) => (
+                    <button
+                      key={preset.url}
+                      onClick={() => handleChange('bgImage', preset.url)}
+                      className={`relative aspect-video rounded-xl overflow-hidden border-2 transition-all ${
+                        localSettings.bgImage === preset.url ? 'border-[var(--primary-color)] scale-105 z-10' : 'border-transparent opacity-50 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
+                      {localSettings.bgImage === preset.url && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <Check className="w-5 h-5 text-[var(--primary-color)]" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1 text-[8px] font-black text-white uppercase text-center truncate">
+                        {preset.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="space-y-4">
