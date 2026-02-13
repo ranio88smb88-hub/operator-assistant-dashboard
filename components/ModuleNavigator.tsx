@@ -60,7 +60,6 @@ const ModuleNavigator: React.FC<Props> = ({ onSelectModule }) => {
           `}
           style={{ backgroundImage: `url(${slide.img})` }}
         >
-          {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent rounded-[28px] md:rounded-[38px]"></div>
           
           <div className={`
@@ -78,7 +77,6 @@ const ModuleNavigator: React.FC<Props> = ({ onSelectModule }) => {
             </div>
           </div>
 
-          {/* Label for non-active */}
           {activeIndex !== i && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                <p className="font-orbitron font-black text-white/20 text-sm md:text-xl -rotate-90 uppercase tracking-[0.5em] group-hover:text-white/40 transition-colors whitespace-nowrap">
