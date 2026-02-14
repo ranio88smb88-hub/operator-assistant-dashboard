@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Working Dashboard - Professional Edition</title>
+    <title>Operator Assistant Dashboard - Cyberpunk Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,196 +11,40 @@
             --neon-green: #0f0;
             --neon-blue: #00f2ff;
             --neon-purple: #bc13fe;
-            --cyber-orange: #ff3c00;
-            --cyber-fire: #ff6a00;
         }
-        
-        html, body {
-            height: auto;
-            min-height: 100%;
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
             background-color: #050505;
             color: #e4e4e7;
+            overflow: hidden;
         }
-
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         
-        /* Realistic Hardware Animations */
-        @keyframes scanline {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
+        .neon-text-green { text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.5); }
+        .neon-border-green { border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
+        
+        /* Slider Animations */
+        .slide {
+            transition: all 1200ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes hardware-flicker {
-          0%, 19.9%, 22%, 62.9%, 64%, 64.9%, 70%, 100% { opacity: 1; }
-          20%, 21.9%, 63%, 63.9%, 65%, 69.9% { opacity: 0.98; }
+        .slide.active {
+            flex-basis: 60% !important;
         }
-
-        /* --- CHARACTER MOTIONS --- */
-        @keyframes char-breathe {
-          0%, 100% { transform: translateY(0) scale(1.05); }
-          50% { transform: translateY(-15px) scale(1.08); }
-        }
-        @keyframes char-drift {
-          0% { background-position: 45% center; }
-          50% { background-position: 55% center; }
-          100% { background-position: 45% center; }
+        .slide.active .slide__text {
+            opacity: 1;
+            scale: 1;
+            transition-delay: 400ms;
         }
 
-        /* --- GLITCH TITLE ANIMATIONS --- */
-        @keyframes glitch-skew {
-          0% { transform: skew(0deg); }
-          20% { transform: skew(-5deg); }
-          24% { transform: skew(5deg); }
-          25% { transform: skew(0deg); }
-          70% { transform: skew(0deg); }
-          71% { transform: skew(-10deg); }
-          72% { transform: skew(10deg); }
-          75% { transform: skew(0deg); }
-          100% { transform: skew(0deg); }
-        }
-
-        @keyframes glitch-anim {
-          0% { clip-path: inset(40% 0 61% 0); transform: translate(-2px, -2px); }
-          20% { clip-path: inset(92% 0 1% 0); transform: translate(1px, 2px); }
-          40% { clip-path: inset(43% 0 1% 0); transform: translate(-1px, -1px); }
-          60% { clip-path: inset(25% 0 58% 0); transform: translate(2px, 1px); }
-          80% { clip-path: inset(54% 0 7% 0); transform: translate(-2px, 2px); }
-          100% { clip-path: inset(58% 0 43% 0); transform: translate(1px, -2px); }
-        }
-
-        .glitch-title {
-          position: relative;
-          animation: glitch-skew 4s infinite linear alternate-reverse;
-        }
-
-        .glitch-title::before,
-        .glitch-title::after {
-          content: attr(data-text);
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: transparent;
-        }
-
-        .glitch-title::before {
-          left: 2px;
-          text-shadow: -2px 0 #ff00c1;
-          clip-path: inset(45% 0 44% 0);
-          animation: glitch-anim 2s infinite linear alternate-reverse;
-        }
-
-        .glitch-title::after {
-          left: -2px;
-          text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
-          animation: glitch-anim 3s infinite linear alternate-reverse;
-          filter: blur(0.5px);
-        }
-
-        /* --- SMOOTH SMOKE & FIRE --- */
-        @keyframes smoke-fluid {
-          0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0; }
-          20% { opacity: 0.3; }
-          50% { transform: scale(1.5) translate(10%, -20%) rotate(10deg); opacity: 0.4; }
-          100% { transform: scale(2) translate(20%, -40%) rotate(20deg); opacity: 0; }
+        .glass-panel {
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 255, 0, 0.1);
         }
         
-        @keyframes fire-fluid-pulse {
-          0%, 100% { height: 120px; filter: brightness(1) blur(10px); opacity: 0.6; }
-          50% { height: 160px; filter: brightness(1.4) blur(15px); opacity: 0.9; }
-        }
-
-        @keyframes ember-drift {
-          0% { transform: translateY(0) translateX(0) scale(1) rotate(0deg); opacity: 1; }
-          25% { transform: translateY(-50px) translateX(15px) scale(0.8) rotate(90deg); }
-          50% { transform: translateY(-100px) translateX(-15px) scale(0.6) rotate(180deg); }
-          75% { transform: translateY(-150px) translateX(10px) scale(0.4) rotate(270deg); }
-          100% { transform: translateY(-220px) translateX(0) scale(0) rotate(360deg); opacity: 0; }
-        }
-
-        .smoke-container {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 1;
-        }
-        .smoke-particle {
-          position: absolute;
-          bottom: 10%;
-          width: 300px;
-          height: 300px;
-          background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
-          filter: blur(60px);
-          mix-blend-mode: screen;
-        }
-
-        .fire-foundation {
-          position: absolute;
-          bottom: -20px;
-          left: 0;
-          width: 100%;
-          pointer-events: none;
-          z-index: 5;
-          mix-blend-mode: plus-lighter;
-        }
-        .fire-inner {
-          position: absolute;
-          bottom: 0;
-          width: 100%;
-          background: linear-gradient(to top, var(--cyber-orange), transparent);
-          border-radius: 50% 50% 0 0;
-        }
-
-        .ember {
-          position: absolute;
-          width: 3px;
-          height: 3px;
-          border-radius: 50%;
-          box-shadow: 0 0 10px var(--cyber-fire);
-        }
-
-        .slide {
-          transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-          overflow: hidden;
-          position: relative;
-        }
-        .slide.active { flex-basis: 58% !important; }
-
-        .char-layer {
-          background-size: cover;
-          background-position: center;
-          position: absolute;
-          inset: 0;
-          transition: transform 1.5s cubic-bezier(0.23, 1, 0.32, 1), filter 1.5s ease;
-        }
-
-        .slide.active .char-layer {
-          animation: 
-            char-breathe 8s infinite ease-in-out,
-            char-drift 15s infinite ease-in-out;
-        }
-
-        .slide:not(.active) .char-layer {
-          filter: grayscale(0.8) blur(8px) opacity(0.2);
-          transform: scale(0.9);
-        }
-
-        .bg-scanline {
-          background: linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.02) 50%);
-          background-size: 100% 4px;
-        }
-
-        .flicker-layer { animation: hardware-flicker 8s infinite; }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
-        ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
     </style>
 <script type="importmap">
 {
@@ -213,18 +56,10 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-    <svg style="display:none">
-      <defs>
-        <filter id="cyber-heat">
-          <feTurbulence type="fractalNoise" baseFrequency="0.01 0.15" numOctaves="3" result="noise" seed="1">
-            <animate attributeName="seed" from="1" to="1000" dur="10s" repeatCount="indefinite" />
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
-        </filter>
-      </defs>
-    </svg>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
