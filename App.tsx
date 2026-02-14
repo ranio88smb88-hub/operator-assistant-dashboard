@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ModuleType, AppSettings } from './types';
 import Navbar from './components/Navbar';
@@ -118,18 +117,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col bg-[#050505] overflow-x-hidden flicker-layer">
-      {/* Background Image Layer */}
+    <div className="relative min-h-screen w-full flex flex-col bg-[#050505]">
+      {/* Background Layer */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-20 mix-blend-screen pointer-events-none transition-all duration-1000 z-[1]"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-lighten pointer-events-none transition-all duration-1000 z-0"
         style={{ backgroundImage: `url(${settings.bgImage})` }}
       ></div>
-
-      {/* Scanline Overlay */}
-      <div className="fixed inset-0 bg-scanline pointer-events-none z-[2] opacity-40"></div>
-      <div className="fixed inset-0 pointer-events-none z-[3] overflow-hidden opacity-[0.03]">
-        <div className="w-full h-[4px] bg-white shadow-[0_0_20px_#fff] animate-[scanline_8s_linear_infinite]"></div>
-      </div>
       
       {/* Navbar Integration */}
       <Navbar 
@@ -150,7 +143,7 @@ const App: React.FC = () => {
       {/* Simple Footer */}
       <footer className="relative z-10 p-6 text-center border-t border-white/5 bg-black/40">
         <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.4em]">
-          Working Dashboard Management Console // Locally Encrypted Protocol
+          Cyber-Ops Management Console // Locally Encrypted Protocol
         </p>
       </footer>
     </div>
