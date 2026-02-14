@@ -61,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeModule, onModuleChange, primaryCo
           </div>
           <div className="flex flex-col">
             <h1 className="font-orbitron text-sm md:text-lg font-black text-[var(--primary-color)] neon-text-primary tracking-tighter uppercase leading-none">
-              CYBER-OPS
+              WORKING-DASH
             </h1>
             <span className="text-[8px] font-black text-zinc-600 tracking-[0.3em] uppercase hidden md:block mt-1">
               SYSTEM STATUS: ACTIVE
