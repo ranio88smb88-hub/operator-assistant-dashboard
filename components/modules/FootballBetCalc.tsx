@@ -5,93 +5,208 @@ import {
   TrendingUp, 
   Target, 
   Info, 
-  CircleDollarSign, 
   Activity, 
   ShieldCheck, 
   ShieldAlert,
-  ChevronRight,
   HelpCircle,
-  Layers
+  Layers,
+  CheckCircle2,
+  Plus,
+  Trash2,
+  Trophy,
+  Dices
 } from 'lucide-react';
 
-type BetResult = 'WIN' | 'HALF_WIN' | 'DRAW' | 'HALF_LOSE' | 'LOSE';
+type BetResult = 'WIN' | 'HALF_WIN' | 'DRAW' | 'HALF_LOSE' | 'LOSE' | 'PENDING';
+
+interface ParlayLeg {
+  id: string;
+  match: string;
+  type: string;
+  subType: string;
+  handicap: number;
+  odds: number;
+  homeScore: number;
+  awayScore: number;
+  exactScore?: string;
+}
 
 interface PayoutDetail {
   payout: number;
   profit: number;
   roi: number;
   status: BetResult;
-  message: string;
 }
 
 const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'error') => void }> = ({ showToast }) => {
-  const [activeTab, setActiveTab] = useState<'CALC' | 'MANUAL'>('CALC');
+  const [activeTab, setActiveTab] = useState<'SINGLE' | 'PARLAY' | 'MANUAL'>('SINGLE');
+  
+  // Single Bet States
   const [betType, setBetType] = useState<string>('ASIAN_HANDICAP');
   const [stake, setStake] = useState<number>(100000);
-  const [odds, setOdds] = useState<number>(1.85);
+  const [odds, setOdds] = useState<number>(1.95);
   const [handicap, setHandicap] = useState<number>(-0.25);
-  const [homeScore, setHomeScore] = useState<number>(1);
+  const [subType, setSubType] = useState<string>('HOME');
+  const [exactScoreInput, setExactScoreInput] = useState<string>('1-0');
+  const [homeScore, setHomeScore] = useState<number>(2);
   const [awayScore, setAwayScore] = useState<number>(1);
 
-  const calculation = useMemo((): PayoutDetail => {
-    let status: BetResult = 'LOSE';
-    let payout = 0;
-    let message = "";
+  // Parlay States
+  const [parlayStake, setParlayStake] = useState<number>(100000);
+  const [parlayLegs, setParlayLegs] = useState<ParlayLeg[]>([
+    { id: '1', match: 'Match 1', type: 'ASIAN_HANDICAP', subType: 'HOME', handicap: -0.5, odds: 1.90, homeScore: 1, awayScore: 0 }
+  ]);
 
-    const goalDiff = homeScore - awayScore;
+  const calculateLegStatus = (leg: ParlayLeg): BetResult => {
+    const goalDiff = leg.homeScore - leg.awayScore;
+    const totalGoals = leg.homeScore + leg.awayScore;
 
-    switch (betType) {
-      case '1X2':
-        if (goalDiff > 0) status = 'WIN';
-        else if (goalDiff === 0) status = 'LOSE';
-        else status = 'LOSE';
-        break;
-
+    switch (leg.type) {
       case 'ASIAN_HANDICAP':
-        const finalLine = goalDiff + handicap;
-        if (finalLine > 0.25) {
-          status = 'WIN';
-        } else if (finalLine === 0.25) {
-          status = 'HALF_WIN';
-        } else if (finalLine === 0) {
-          status = 'DRAW';
-        } else if (finalLine === -0.25) {
-          status = 'HALF_LOSE';
-        } else {
-          status = 'LOSE';
-        }
-        break;
+        const hdpFinal = goalDiff + leg.handicap;
+        if (hdpFinal > 0.25) return 'WIN';
+        if (hdpFinal === 0.25) return 'HALF_WIN';
+        if (hdpFinal === 0) return 'DRAW';
+        if (hdpFinal === -0.25) return 'HALF_LOSE';
+        return 'LOSE';
 
       case 'OVER_UNDER':
-        const totalGoals = homeScore + awayScore;
-        const ouLine = totalGoals - handicap; // here handicap is the line e.g. 2.5
-        if (ouLine > 0.25) status = 'WIN';
-        else if (ouLine === 0.25) status = 'HALF_WIN';
-        else if (ouLine === 0) status = 'DRAW';
-        else if (ouLine === -0.25) status = 'HALF_LOSE';
-        else status = 'LOSE';
+        const ouDiff = totalGoals - leg.handicap;
+        if (leg.subType === 'OVER') {
+          if (ouDiff > 0.25) return 'WIN';
+          if (ouDiff === 0.25) return 'HALF_WIN';
+          if (ouDiff === 0) return 'DRAW';
+          if (ouDiff === -0.25) return 'HALF_LOSE';
+          return 'LOSE';
+        } else {
+          if (ouDiff < -0.25) return 'WIN';
+          if (ouDiff === -0.25) return 'HALF_WIN';
+          if (ouDiff === 0) return 'DRAW';
+          if (ouDiff === 0.25) return 'HALF_LOSE';
+          return 'LOSE';
+        }
+
+      case '1X2':
+        if (leg.subType === 'HOME' && goalDiff > 0) return 'WIN';
+        if (leg.subType === 'DRAW' && goalDiff === 0) return 'WIN';
+        if (leg.subType === 'AWAY' && goalDiff < 0) return 'WIN';
+        return 'LOSE';
+
+      case 'DOUBLE_CHANCE':
+        if (leg.subType === '1X' && goalDiff >= 0) return 'WIN';
+        if (leg.subType === '12' && goalDiff !== 0) return 'WIN';
+        if (leg.subType === 'X2' && goalDiff <= 0) return 'WIN';
+        return 'LOSE';
+
+      case 'BTTS': // Both Teams To Score
+        const bothScored = leg.homeScore > 0 && leg.awayScore > 0;
+        if (leg.subType === 'YES' && bothScored) return 'WIN';
+        if (leg.subType === 'NO' && !bothScored) return 'WIN';
+        return 'LOSE';
+
+      case 'ODD_EVEN':
+        const isOdd = totalGoals % 2 !== 0;
+        if (leg.subType === 'ODD' && isOdd) return 'WIN';
+        if (leg.subType === 'EVEN' && !isOdd) return 'WIN';
+        return 'LOSE';
+
+      case 'DNB': // Draw No Bet
+        if (goalDiff === 0) return 'DRAW';
+        if (leg.subType === 'HOME' && goalDiff > 0) return 'WIN';
+        if (leg.subType === 'AWAY' && goalDiff < 0) return 'WIN';
+        return 'LOSE';
+
+      case 'CORRECT_SCORE':
+        const scoreStr = `${leg.homeScore}-${leg.awayScore}`;
+        if (leg.exactScore === scoreStr) return 'WIN';
+        return 'LOSE';
+
+      case 'TOTAL_GOALS':
+        if (leg.subType === '0-1' && totalGoals <= 1) return 'WIN';
+        if (leg.subType === '2-3' && (totalGoals === 2 || totalGoals === 3)) return 'WIN';
+        if (leg.subType === '4-6' && (totalGoals >= 4 && totalGoals <= 6)) return 'WIN';
+        if (leg.subType === '7+' && totalGoals >= 7) return 'WIN';
+        return 'LOSE';
+
+      default: return 'LOSE';
+    }
+  };
+
+  const parlayCalculation = useMemo(() => {
+    let currentMultiplier = 1.0;
+    let finalStatus: BetResult = 'WIN';
+    
+    for (const leg of parlayLegs) {
+      const status = calculateLegStatus(leg);
+      if (status === 'LOSE') {
+        currentMultiplier = 0;
+        finalStatus = 'LOSE';
         break;
-      
-      default:
-        status = goalDiff > 0 ? 'WIN' : 'LOSE';
+      } else if (status === 'HALF_WIN') {
+        currentMultiplier *= (leg.odds + 1) / 2;
+        if (finalStatus !== 'HALF_LOSE') finalStatus = 'HALF_WIN';
+      } else if (status === 'HALF_LOSE') {
+        currentMultiplier *= 0.5;
+        finalStatus = 'HALF_LOSE';
+      } else if (status === 'DRAW') {
+        currentMultiplier *= 1.0;
+      } else {
+        currentMultiplier *= leg.odds;
+      }
     }
 
-    // Payout Logic
+    const payout = parlayStake * currentMultiplier;
+    return {
+      payout,
+      profit: payout - parlayStake,
+      status: finalStatus,
+      multiplier: currentMultiplier
+    };
+  }, [parlayLegs, parlayStake]);
+
+  const singleCalculation = useMemo((): PayoutDetail => {
+    const status = calculateLegStatus({ 
+      id: '0', match: '', type: betType, subType, handicap, odds, homeScore, awayScore, exactScore: exactScoreInput
+    });
+    let payout = 0;
     if (status === 'WIN') payout = stake * odds;
     else if (status === 'HALF_WIN') payout = stake + (stake * (odds - 1) / 2);
     else if (status === 'DRAW') payout = stake;
     else if (status === 'HALF_LOSE') payout = stake / 2;
-    else payout = 0;
+    
+    return { payout, profit: payout - stake, roi: stake > 0 ? ((payout - stake) / stake) * 100 : 0, status };
+  }, [betType, stake, odds, handicap, subType, homeScore, awayScore, exactScoreInput]);
 
-    const profit = payout - stake;
-    const roi = (profit / stake) * 100;
+  const addLeg = () => {
+    if (parlayLegs.length >= 10) {
+      showToast('Maksimum 10 pertandingan per paket parlay', 'error');
+      return;
+    }
+    const newLeg: ParlayLeg = {
+      id: Math.random().toString(36).substr(2, 9),
+      match: `Match ${parlayLegs.length + 1}`,
+      type: 'ASIAN_HANDICAP',
+      subType: 'HOME',
+      handicap: 0,
+      odds: 1.90,
+      homeScore: 0,
+      awayScore: 0
+    };
+    setParlayLegs([...parlayLegs, newLeg]);
+  };
 
-    return { payout, profit, roi, status, message };
-  }, [betType, stake, odds, handicap, homeScore, awayScore]);
+  const removeLeg = (id: string) => {
+    if (parlayLegs.length <= 1) return;
+    setParlayLegs(parlayLegs.filter(l => l.id !== id));
+  };
+
+  const updateLeg = (id: string, field: keyof ParlayLeg, value: any) => {
+    setParlayLegs(parlayLegs.map(l => l.id === id ? { ...l, [field]: value } : l));
+  };
 
   const getStatusColor = (status: BetResult) => {
     switch (status) {
-      case 'WIN': return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
+      case 'WIN': return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.1)]';
       case 'HALF_WIN': return 'text-emerald-300 border-emerald-400/20 bg-emerald-400/5';
       case 'DRAW': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
       case 'HALF_LOSE': return 'text-amber-400 border-amber-500/30 bg-amber-500/10';
@@ -101,252 +216,331 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-20">
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h3 className="text-3xl font-black font-orbitron text-white uppercase tracking-tighter italic">Football Bet Engine</h3>
-          <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] font-bold">Standardized Payout Protocol V4.2</p>
+          <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] font-bold">Standardized Payout Protocol V6.5 // All Markets Integrated</p>
         </div>
         <div className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-white/5">
-          <button 
-            onClick={() => setActiveTab('CALC')}
-            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'CALC' ? 'bg-[var(--primary-color)] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-          >
-            Calculator
-          </button>
-          <button 
-            onClick={() => setActiveTab('MANUAL')}
-            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'MANUAL' ? 'bg-[var(--primary-color)] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-          >
-            Market Guide
-          </button>
+          {['SINGLE', 'PARLAY', 'MANUAL'].map((tab) => (
+            <button 
+              key={tab}
+              onClick={() => setActiveTab(tab as any)}
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-[var(--primary-color)] text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
 
-      {activeTab === 'CALC' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Simulation Input */}
+      {activeTab === 'SINGLE' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
           <div className="lg:col-span-5 space-y-6">
             <div className="glass-panel p-8 rounded-[40px] border border-primary-fade relative overflow-hidden">
               <div className="flex items-center space-x-3 mb-8">
                 <Calculator className="w-5 h-5 text-[var(--primary-color)]" />
-                <h4 className="text-sm font-black font-orbitron text-white uppercase tracking-wider">Simulation Parameters</h4>
+                <h4 className="text-sm font-black font-orbitron text-white uppercase tracking-wider">Single Parameters</h4>
               </div>
-
+              
               <div className="space-y-6">
-                {/* Market Type */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Select Market</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Market Type</label>
                   <select 
                     value={betType} 
-                    onChange={e => setBetType(e.target.value)}
-                    className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-xs font-bold text-zinc-300 outline-none focus:border-[var(--primary-color)]"
+                    onChange={e => setBetType(e.target.value)} 
+                    className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-xs font-bold text-zinc-300 outline-none focus:border-[var(--primary-color)] appearance-none"
                   >
                     <option value="ASIAN_HANDICAP">Asian Handicap (HDP)</option>
                     <option value="OVER_UNDER">Over / Under (OU)</option>
                     <option value="1X2">1X2 (FT/HT)</option>
+                    <option value="DOUBLE_CHANCE">Double Chance</option>
+                    <option value="BTTS">Both Teams to Score</option>
+                    <option value="ODD_EVEN">Odd / Even (Total Gol)</option>
+                    <option value="DNB">Draw No Bet (DNB)</option>
+                    <option value="CORRECT_SCORE">Correct Score (Tebak Skor)</option>
+                    <option value="TOTAL_GOALS">Total Goals (Range)</option>
                   </select>
                 </div>
+
+                {/* Sub-Type Selectors based on Market */}
+                {['1X2', 'DNB'].includes(betType) && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {['HOME', 'DRAW', 'AWAY'].map(opt => (
+                      <button key={opt} onClick={() => setSubType(opt)} disabled={betType === 'DNB' && opt === 'DRAW'}
+                        className={`py-3 rounded-xl text-[10px] font-black border transition-all ${subType === opt ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {betType === 'OVER_UNDER' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {['OVER', 'UNDER'].map(opt => (
+                      <button key={opt} onClick={() => setSubType(opt)}
+                        className={`py-3 rounded-xl text-[10px] font-black border transition-all ${subType === opt ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {betType === 'DOUBLE_CHANCE' && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {['1X', '12', 'X2'].map(opt => (
+                      <button key={opt} onClick={() => setSubType(opt)}
+                        className={`py-3 rounded-xl text-[10px] font-black border transition-all ${subType === opt ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {['BTTS', 'ODD_EVEN'].includes(betType) && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {(betType === 'BTTS' ? ['YES', 'NO'] : ['ODD', 'EVEN']).map(opt => (
+                      <button key={opt} onClick={() => setSubType(opt)}
+                        className={`py-3 rounded-xl text-[10px] font-black border transition-all ${subType === opt ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {betType === 'CORRECT_SCORE' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Exact Score Target (H-A)</label>
+                    <input type="text" value={exactScoreInput} onChange={e => setExactScoreInput(e.target.value)} className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-center font-black text-xl text-white" placeholder="e.g. 2-1" />
+                  </div>
+                )}
+
+                {betType === 'TOTAL_GOALS' && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {['0-1', '2-3', '4-6', '7+'].map(opt => (
+                      <button key={opt} onClick={() => setSubType(opt)}
+                        className={`py-2 rounded-xl text-[9px] font-black border transition-all ${subType === opt ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500'}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Stake (Modal)</label>
-                    <input 
-                      type="number" value={stake} onChange={e => setStake(Number(e.target.value))}
-                      className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-lg font-black text-white"
-                    />
+                    <input type="number" value={stake} onChange={e => setStake(Number(e.target.value))} className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-lg font-black text-white" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Odds (Decimal)</label>
-                    <input 
-                      type="number" step="0.01" value={odds} onChange={e => setOdds(Number(e.target.value))}
-                      className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-lg font-black text-[var(--primary-color)]"
-                    />
+                    <input type="number" step="0.01" value={odds} onChange={e => setOdds(Number(e.target.value))} className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-lg font-black text-[var(--primary-color)]" />
                   </div>
                 </div>
 
-                {(betType === 'ASIAN_HANDICAP' || betType === 'OVER_UNDER') && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                      {betType === 'ASIAN_HANDICAP' ? 'Handicap Line' : 'Over/Under Line'}
-                    </label>
+                {['ASIAN_HANDICAP', 'OVER_UNDER'].includes(betType) && (
+                   <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Handicap / Goal Line</label>
                     <div className="grid grid-cols-5 gap-2">
-                      {[-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 2.5].map(v => (
-                        <button 
-                          key={v}
-                          onClick={() => setHandicap(v)}
-                          className={`p-2 rounded-xl text-[10px] font-black transition-all border ${handicap === v ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500 hover:border-white/20'}`}
-                        >
-                          {v > 0 ? `+${v}` : v}
+                      {[-2.5, -2, -1.75, -1.5, -1.25, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5].map(val => (
+                        <button key={val} onClick={() => setHandicap(val)} className={`py-1.5 rounded-lg text-[9px] font-black border transition-all ${handicap === val ? 'bg-[var(--primary-color)] text-black border-[var(--primary-color)]' : 'bg-white/5 border-white/5 text-zinc-500'}`}>
+                          {val > 0 ? `+${val}` : val}
                         </button>
                       ))}
                     </div>
                   </div>
                 )}
 
-                <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-4">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block text-center">Simulation Final Score</label>
-                  <div className="flex items-center justify-center space-x-6">
-                    <div className="flex flex-col items-center">
-                      <span className="text-[8px] font-black text-zinc-600 uppercase mb-2">Home</span>
-                      <input 
-                        type="number" value={homeScore} onChange={e => setHomeScore(Number(e.target.value))}
-                        className="w-16 h-16 bg-black border border-white/10 rounded-2xl text-2xl font-black text-white text-center"
-                      />
+                <div className="p-6 bg-white/5 rounded-[30px] border border-white/5 space-y-4">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block text-center">Simulation Result</label>
+                    <div className="flex items-center justify-center space-x-6">
+                      <div className="flex flex-col items-center">
+                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-2">Home Score</span>
+                        <input type="number" value={homeScore} onChange={e => setHomeScore(Number(e.target.value))} className="w-16 h-16 bg-black border border-white/10 rounded-2xl text-2xl font-black text-white text-center" />
+                      </div>
+                      <span className="text-xl font-black text-zinc-700 font-orbitron">VS</span>
+                      <div className="flex flex-col items-center">
+                        <span className="text-[8px] font-black text-zinc-600 uppercase mb-2">Away Score</span>
+                        <input type="number" value={awayScore} onChange={e => setAwayScore(Number(e.target.value))} className="w-16 h-16 bg-black border border-white/10 rounded-2xl text-2xl font-black text-white text-center" />
+                      </div>
                     </div>
-                    <span className="text-xl font-black text-zinc-700 font-orbitron">VS</span>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[8px] font-black text-zinc-600 uppercase mb-2">Away</span>
-                      <input 
-                        type="number" value={awayScore} onChange={e => setAwayScore(Number(e.target.value))}
-                        className="w-16 h-16 bg-black border border-white/10 rounded-2xl text-2xl font-black text-white text-center"
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Results Analytics */}
+          
           <div className="lg:col-span-7 space-y-6">
-            <div className={`p-10 rounded-[40px] border-2 transition-all duration-700 flex flex-col items-center text-center space-y-6 ${getStatusColor(calculation.status)}`}>
+            <div className={`p-10 rounded-[40px] border-2 transition-all duration-700 flex flex-col items-center text-center space-y-6 ${getStatusColor(singleCalculation.status)}`}>
                <div className="p-6 rounded-full bg-white/10">
-                 {calculation.status.includes('WIN') ? <ShieldCheck className="w-12 h-12" /> : <ShieldAlert className="w-12 h-12" />}
+                 {singleCalculation.status.includes('WIN') ? <ShieldCheck className="w-12 h-12" /> : <ShieldAlert className="w-12 h-12" />}
                </div>
                <div>
-                 <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 mb-1">Transaction Outcome</p>
-                 <h2 className="text-6xl font-black font-orbitron tracking-tighter uppercase">{calculation.status.replace('_', ' ')}</h2>
+                 <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 mb-1">Single Outcome</p>
+                 <h2 className="text-6xl font-black font-orbitron tracking-tighter uppercase">{singleCalculation.status.replace('_', ' ')}</h2>
                </div>
-               
                <div className="grid grid-cols-2 gap-8 w-full pt-6 border-t border-white/5">
-                 <div className="text-left">
+                 <div className="text-left text-zinc-200">
                    <p className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-1">Total Payout</p>
-                   <p className="text-2xl font-black font-orbitron">Rp {calculation.payout.toLocaleString('id-ID')}</p>
+                   <p className="text-2xl font-black font-orbitron">Rp {singleCalculation.payout.toLocaleString('id-ID')}</p>
                  </div>
                  <div className="text-right">
                    <p className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-1">Net Profit</p>
-                   <p className={`text-2xl font-black font-orbitron ${calculation.profit >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
-                     {calculation.profit >= 0 ? '+' : ''}{calculation.profit.toLocaleString('id-ID')}
+                   <p className={`text-2xl font-black font-orbitron ${singleCalculation.profit >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
+                     {singleCalculation.profit >= 0 ? '+' : ''}{singleCalculation.profit.toLocaleString('id-ID')}
                    </p>
                  </div>
                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="glass-panel p-6 rounded-[30px] border border-white/5 flex items-center space-x-4">
-                <div className="p-3 bg-zinc-900 rounded-2xl">
-                  <TrendingUp className="w-5 h-5 text-zinc-500" />
+                <div className="p-3 bg-zinc-900 rounded-xl text-zinc-600">
+                  <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Return on Investment</p>
-                  <p className={`text-xl font-black font-orbitron ${calculation.roi >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
-                    {calculation.roi.toFixed(1)}%
+                  <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">ROI (Return)</p>
+                  <p className={`text-lg font-black font-orbitron ${singleCalculation.roi >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {singleCalculation.roi.toFixed(1)}%
                   </p>
                 </div>
               </div>
               <div className="glass-panel p-6 rounded-[30px] border border-white/5 flex items-center space-x-4">
-                <div className="p-3 bg-zinc-900 rounded-2xl">
-                  <Activity className="w-5 h-5 text-zinc-500" />
+                <div className="p-3 bg-zinc-900 rounded-xl text-zinc-600">
+                  <Dices className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">Risk Profile</p>
-                  <p className="text-xl font-black font-orbitron text-zinc-300">
-                    {odds > 2 ? 'HIGH' : odds > 1.5 ? 'BALANCED' : 'LOW'}
+                  <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Risk Level</p>
+                  <p className="text-lg font-black font-orbitron text-zinc-300">
+                    {odds > 5 ? 'EXTREME' : odds > 2.5 ? 'HIGH' : odds > 1.8 ? 'STABLE' : 'LOW'}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 rounded-[30px] border border-white/5 bg-zinc-950/40 flex items-start space-x-4">
-              <Info className="w-5 h-5 text-zinc-600 mt-1 shrink-0" />
-              <div className="space-y-1">
-                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Logic Breakdown:</p>
-                <p className="text-[10px] text-zinc-600 leading-relaxed font-bold italic">
-                  {betType === 'ASIAN_HANDICAP' && `HDP ${handicap}: Selisih gol (${homeScore - awayScore}) vs Line (${Math.abs(handicap)}). Karena selisih gol adalah ${homeScore - awayScore}, maka hasil kalkulasi sistem adalah ${calculation.status}.`}
-                  {betType === '1X2' && `Pasaran Klasik: Karena skor ${homeScore}-${awayScore}, Home menang adalah ${homeScore > awayScore ? 'Benar' : 'Salah'}.`}
-                  {betType === 'OVER_UNDER' && `Total Gol (${homeScore + awayScore}) vs Line (${handicap}). Selisih: ${(homeScore + awayScore) - handicap}. Result: ${calculation.status}.`}
-                </p>
-              </div>
+            <div className="p-6 rounded-[30px] border border-white/5 bg-zinc-950/40 space-y-4">
+               <div className="flex items-center space-x-2">
+                 <Info className="w-4 h-4 text-zinc-600" />
+                 <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Calculation Rules Summary</h5>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] text-zinc-600 font-bold italic leading-relaxed">
+                 <div className="space-y-1">
+                   <p className="text-zinc-400">WIN FULL: Stake x Odds</p>
+                   <p className="text-zinc-400">HALF WIN: Stake + (Stake * (Odds - 1) / 2)</p>
+                   <p className="text-zinc-400">DRAW: Stake Returned (1.00)</p>
+                 </div>
+                 <div className="space-y-1">
+                   <p className="text-rose-400/60">HALF LOSE: Stake / 2 (Lost half)</p>
+                   <p className="text-rose-500/60">LOSE FULL: Zero Payout</p>
+                 </div>
+               </div>
             </div>
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'PARLAY' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="lg:col-span-8 space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Parlay Match List ({parlayLegs.length}/10)</h4>
+              <button onClick={addLeg} className="bg-[var(--primary-color)]/10 text-[var(--primary-color)] px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-[var(--primary-color)]/20 hover:bg-[var(--primary-color)] hover:text-black transition-all flex items-center">
+                <Plus className="w-3 h-3 mr-2" /> Add Match
+              </button>
+            </div>
+            
+            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
+              {parlayLegs.map((leg, index) => (
+                <div key={leg.id} className="glass-panel p-6 rounded-[30px] border border-white/5 flex flex-col md:flex-row gap-6 relative group">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Match #{index + 1}</span>
+                      <button onClick={() => removeLeg(leg.id)} className="text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black text-zinc-500 uppercase">Market</label>
+                        <select value={leg.type} onChange={e => updateLeg(leg.id, 'type', e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-bold text-zinc-300 outline-none">
+                          <option value="ASIAN_HANDICAP">HDP</option>
+                          <option value="OVER_UNDER">O/U</option>
+                          <option value="1X2">1X2</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black text-zinc-500 uppercase">Line / Odds</label>
+                        <div className="flex gap-2">
+                          <input type="number" step="0.25" value={leg.handicap} onChange={e => updateLeg(leg.id, 'handicap', Number(e.target.value))} className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-black text-white" placeholder="Line" />
+                          <input type="number" step="0.01" value={leg.odds} onChange={e => updateLeg(leg.id, 'odds', Number(e.target.value))} className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-black text-[var(--primary-color)]" placeholder="Odds" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black text-zinc-500 uppercase">Simulasi Skor (H-A)</label>
+                        <div className="flex gap-2 items-center">
+                          <input type="number" value={leg.homeScore} onChange={e => updateLeg(leg.id, 'homeScore', Number(e.target.value))} className="w-full bg-black border border-white/5 rounded-xl p-3 text-center text-xs font-black text-white" />
+                          <span className="text-zinc-700">-</span>
+                          <input type="number" value={leg.awayScore} onChange={e => updateLeg(leg.id, 'awayScore', Number(e.target.value))} className="w-full bg-black border border-white/5 rounded-xl p-3 text-center text-xs font-black text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`md:w-32 flex flex-col items-center justify-center rounded-2xl border-2 ${getStatusColor(calculateLegStatus(leg))}`}>
+                    <span className="text-[8px] font-black uppercase opacity-60">Leg Status</span>
+                    <span className="text-[10px] font-black uppercase">{calculateLegStatus(leg).replace('_', ' ')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 space-y-6">
+            <div className="glass-panel p-8 rounded-[40px] border border-primary-fade flex flex-col items-center text-center space-y-8 bg-gradient-to-b from-primary-fade to-transparent sticky top-24">
+               <div className="w-16 h-16 bg-[var(--primary-color)] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,255,0,0.3)]">
+                 <Trophy className="w-8 h-8 text-black" />
+               </div>
+               
+               <div className="w-full space-y-2">
+                 <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total Stake (Modal)</label>
+                 <input type="number" value={parlayStake} onChange={e => setParlayStake(Number(e.target.value))} className="w-full bg-black/60 border border-white/10 rounded-2xl p-5 text-2xl font-black text-white text-center" />
+               </div>
+
+               <div className="grid grid-cols-2 gap-4 w-full border-y border-white/5 py-6">
+                 <div>
+                   <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Current Multiplier</p>
+                   <p className="text-xl font-black font-orbitron text-[var(--primary-color)]">@{parlayCalculation.multiplier.toFixed(3)}</p>
+                 </div>
+                 <div>
+                   <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Parlay Status</p>
+                   <p className={`text-xl font-black font-orbitron ${parlayCalculation.status === 'LOSE' ? 'text-rose-500' : 'text-emerald-400'}`}>
+                     {parlayCalculation.status}
+                   </p>
+                 </div>
+               </div>
+
+               <div className="w-full space-y-4">
+                 <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total Win</span>
+                    <span className="text-3xl font-black font-orbitron text-white">Rp {parlayCalculation.payout.toLocaleString('id-ID')}</span>
+                 </div>
+                 <div className="flex justify-between items-end">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Net Profit</span>
+                    <span className={`text-xl font-black font-orbitron ${parlayCalculation.profit >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
+                      {parlayCalculation.profit >= 0 ? '+' : ''}{parlayCalculation.profit.toLocaleString('id-ID')}
+                    </span>
+                 </div>
+               </div>
+               
+               <p className="text-[9px] text-zinc-600 font-bold italic leading-relaxed">
+                 Sistem secara otomatis menghitung perkalian odds berdasarkan hasil tiap pertandingan dalam paket parlay Anda.
+               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'MANUAL' && (
         <div className="space-y-8 animate-in fade-in duration-500">
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-             <MarketCard 
-               title="Main Markets"
-               items={["1X2 (Home/Draw/Away)", "Double Chance (1X, 12, X2)", "Draw No Bet (DNB)"]}
-               icon={<Target className="w-4 h-4" />}
-             />
-             <MarketCard 
-               title="Handicaps"
-               items={["Asian Handicap (Quarter Logic)", "European Handicap (3-Way)", "Alternative Lines"]}
-               icon={<Activity className="w-4 h-4" />}
-             />
-             <MarketCard 
-               title="Over / Under"
-               items={["O/U Full Time", "O/U Half Time", "O/U Team Goals"]}
-               icon={<Layers className="w-4 h-4" />}
-             />
-             <MarketCard 
-               title="Goal Markets"
-               items={["Both Teams to Score (BTTS)", "Correct Score (Skor Tepat)", "First/Last Goal"]}
-               icon={<CircleDollarSign className="w-4 h-4" />}
-             />
-             <MarketCard 
-               title="Time Markets"
-               items={["HT/FT Combinations", "Win Both Halves", "Highest Scoring Half"]}
-               icon={<ChevronRight className="w-4 h-4" />}
-             />
-             <MarketCard 
-               title="Specials"
-               items={["Total Corners/Cards", "Player to Score", "Accumulators (Parlay)"]}
-               icon={<Gem className="w-4 h-4" />}
-             />
-           </div>
-
-           <div className="glass-panel p-10 rounded-[40px] border border-white/5 space-y-8">
-              <h4 className="text-xl font-black font-orbitron text-white uppercase tracking-wider flex items-center">
-                <HelpCircle className="w-6 h-6 mr-3 text-blue-400" /> Advanced Logic Rules
-              </h4>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div className="space-y-4">
-                  <h5 className="text-[10px] font-black text-[var(--primary-color)] uppercase tracking-widest border-b border-primary-fade pb-2">Asian Handicap -0.25 (Quarter Ball)</h5>
-                  <ul className="space-y-3">
-                    <li className="flex items-start space-x-3 text-xs text-zinc-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></div>
-                      <span><strong>Menang:</strong> Jika tim pilihan menang dengan selisih gol minimal 1. (Hadiah Full)</span>
-                    </li>
-                    <li className="flex items-start space-x-3 text-xs text-zinc-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></div>
-                      <span><strong>Seri:</strong> 50% modal kalah, 50% modal dikembalikan (Half Lose).</span>
-                    </li>
-                    <li className="flex items-start space-x-3 text-xs text-zinc-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></div>
-                      <span><strong>Kalah:</strong> Jika tim pilihan kalah skor berapapun.</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="space-y-4">
-                  <h5 className="text-[10px] font-black text-blue-400 uppercase tracking-widest border-b border-blue-500/20 pb-2">Asian Handicap -0.75 (Three-Quarter)</h5>
-                  <ul className="space-y-3">
-                    <li className="flex items-start space-x-3 text-xs text-zinc-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0"></div>
-                      <span><strong>Menang Full:</strong> Jika tim pilihan menang selisih minimal 2 gol (misal 2-0, 3-1).</span>
-                    </li>
-                    <li className="flex items-start space-x-3 text-xs text-zinc-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div>
-                      <span><strong>Menang Setengah:</strong> Jika tim pilihan menang selisih tepat 1 gol (misal 1-0, 2-1).</span>
-                    </li>
-                    <li className="flex items-start space-x-3 text-xs text-zinc-400">
-                      <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0"></div>
-                      <span><strong>Kalah:</strong> Jika hasil seri atau tim pilihan kalah.</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+             <MarketCard title="Asian Handicap" items={["0.25 (Quarter): Menang 1/2 jika seri.", "0.50 (Half): Menang/Kalah mutlak.", "0.75 (Three-Quarter): Menang 1/2 jika selisih 1 gol."]} icon={<Target className="w-4 h-4" />} />
+             <MarketCard title="Over / Under" items={["OU 2.25: Seri 2 gol = Menang 1/2 (Under).", "OU 2.75: Seri 3 gol = Kalah 1/2 (Under).", "Total gol kedua tim dijumlahkan."]} icon={<Layers className="w-4 h-4" />} />
+             <MarketCard title="Parlay Calculation" items={["Win Full: x Odds.", "Half Win: x ((Odds+1)/2).", "Half Lose: x 0.5 (Total Payout / 2).", "Draw: x 1.00 (Modal Balik)."]} icon={<Activity className="w-4 h-4" />} />
            </div>
         </div>
       )}
@@ -357,21 +551,15 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
 const MarketCard = ({ title, items, icon }: { title: string, items: string[], icon: React.ReactNode }) => (
   <div className="glass-panel p-6 rounded-[30px] border border-white/5 space-y-4 hover:border-white/20 transition-all group">
     <div className="flex items-center space-x-3 mb-2">
-      <div className="p-2.5 bg-zinc-900 rounded-xl text-zinc-500 group-hover:text-[var(--primary-color)] transition-colors">
-        {icon}
-      </div>
+      <div className="p-2.5 bg-zinc-900 rounded-xl text-zinc-500 group-hover:text-[var(--primary-color)] transition-colors">{icon}</div>
       <h5 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{title}</h5>
     </div>
     <ul className="space-y-2">
       {items.map(item => (
-        <li key={item} className="text-xs text-zinc-600 font-bold flex items-center">
-          <ChevronRight className="w-3 h-3 mr-2 opacity-30" /> {item}
-        </li>
+        <li key={item} className="text-xs text-zinc-600 font-bold flex items-center"><CheckCircle2 className="w-3 h-3 mr-2 text-emerald-500/30" /> {item}</li>
       ))}
     </ul>
   </div>
 );
-
-const Gem = ({ className }: { className?: string }) => <CircleDollarSign className={className} />;
 
 export default FootballBetCalc;
