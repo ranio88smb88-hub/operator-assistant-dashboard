@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { AppSettings, ModuleType } from '../../types';
 import { Settings as SettingsIcon, Palette, Image as ImageIcon, Type, Table, Layout, Save, Upload, Check } from 'lucide-react';
