@@ -33,10 +33,13 @@ export interface AppSettings {
 export interface PasaranData {
   id: string;
   name: string;
-  open: string;
-  close: string;
-  result: string;
+  betClose: string;
+  open: string; // Jam Tutup / Result
   status: 'Open' | 'Closed';
+  prize: string;
+  liveDraw: string;
+  link: string;
+  initialDone?: boolean;
 }
 
 export interface ShioData {
