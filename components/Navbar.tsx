@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Terminal,
+  Coins,
   Settings as SettingsIcon
 } from 'lucide-react';
 
@@ -41,6 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeModule, onModuleChange, primaryCo
     { type: ModuleType.RESULT_VIEWER, label: 'ARCHIVE', icon: History },
     { type: ModuleType.NAWALA_CHECK, label: 'NAWALA', icon: ShieldAlert },
     { type: ModuleType.SHIO_REF, label: 'SHIO', icon: Zap },
+    { type: ModuleType.SLOT_WIN_CALC, label: 'SLOT WIN', icon: Coins },
   ];
 
   const handleNav = (type: ModuleType | 'HOME') => {
@@ -61,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeModule, onModuleChange, primaryCo
           </div>
           <div className="flex flex-col">
             <h1 className="font-orbitron text-sm md:text-lg font-black text-[var(--primary-color)] neon-text-primary tracking-tighter uppercase leading-none">
-              WORKING-DASH
+              WORKING DASHBOARD
             </h1>
             <span className="text-[8px] font-black text-zinc-600 tracking-[0.3em] uppercase hidden md:block mt-1">
               SYSTEM STATUS: ACTIVE
@@ -157,7 +159,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeModule, onModuleChange, primaryCo
           </button>
         </div>
         <div className="p-4 bg-black/60 border-t border-white/5 flex items-center justify-between text-[8px] font-black tracking-[0.3em] text-zinc-600">
-          <span>OPERATOR INTERFACE V3.0</span>
+          <span>WORKING DASHBOARD V3.0</span>
           <span className="text-[var(--primary-color)] animate-pulse">SYNCED</span>
         </div>
       </div>
