@@ -36,6 +36,7 @@ interface PayoutDetail {
   profit: number;
   roi: number;
   status: BetResult;
+  explanation: string;
 }
 
 const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'error') => void }> = ({ showToast }) => {
@@ -132,6 +133,80 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
     }
   };
 
+  const getLegExplanation = (leg: ParlayLeg): string => {
+    const goalDiff = leg.homeScore - leg.awayScore;
+    const totalGoals = leg.homeScore + leg.awayScore;
+    const hdpLabel = leg.handicap > 0 ? `+${leg.handicap}` : leg.handicap.toString();
+
+    switch (leg.type) {
+      case 'ASIAN_HANDICAP':
+        const hdpFinal = goalDiff + leg.handicap;
+        if (hdpFinal > 0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = ${hdpFinal}. Unggul > 0.25 (Menang Penuh: x${leg.odds}).`;
+        if (hdpFinal === 0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = 0.25. Unggul tepat 0.25 (Menang Setengah: x${((leg.odds + 1) / 2).toFixed(3)}).`;
+        if (hdpFinal === 0) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = 0. Skor Seri (Draw: x1.00).`;
+        if (hdpFinal === -0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = -0.25. Tertinggal 0.25 (Kalah Setengah: x0.50).`;
+        return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = ${hdpFinal}. Tertinggal (Kalah Penuh: x0.00).`;
+
+      case 'OVER_UNDER':
+        const ouDiff = totalGoals - leg.handicap;
+        if (leg.subType === 'OVER') {
+          if (ouDiff > 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line > 0.25 (Over Menang: x${leg.odds}).`;
+          if (ouDiff === 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line tepat 0.25 (Over Menang Setengah: x${((leg.odds + 1) / 2).toFixed(3)}).`;
+          if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line (Draw: x1.00).`;
+          if (ouDiff === -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Kurang dari line 0.25 (Over Kalah Setengah: x0.50).`;
+          return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line (Over Kalah: x0.00).`;
+        } else {
+          if (ouDiff < -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line > 0.25 (Under Menang: x${leg.odds}).`;
+          if (ouDiff === -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line tepat 0.25 (Under Menang Setengah: x${((leg.odds + 1) / 2).toFixed(3)}).`;
+          if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line (Draw: x1.00).`;
+          if (ouDiff === 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line 0.25 (Under Kalah Setengah: x0.50).`;
+          return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di atas line (Under Kalah: x0.00).`;
+        }
+
+      case '1X2':
+        if (leg.subType === 'HOME') return goalDiff > 0 ? `Tuan Rumah menang (${leg.homeScore}-${leg.awayScore}) (Menang: x${leg.odds}).` : `Tuan Rumah tidak menang (Kalah: x0.00).`;
+        if (leg.subType === 'DRAW') return goalDiff === 0 ? `Skor Seri (${leg.homeScore}-${leg.awayScore}) (Menang: x${leg.odds}).` : `Skor tidak seri (Kalah: x0.00).`;
+        if (leg.subType === 'AWAY') return goalDiff < 0 ? `Tamu menang (${leg.homeScore}-${leg.awayScore}) (Menang: x${leg.odds}).` : `Tamu tidak menang (Kalah: x0.00).`;
+        return "";
+
+      case 'BTTS':
+        const bothScored = leg.homeScore > 0 && leg.awayScore > 0;
+        if (leg.subType === 'YES') return bothScored ? `Kedua tim mencetak gol (Menang: x${leg.odds}).` : `Salah satu atau kedua tim tidak mencetak gol (Kalah: x0.00).`;
+        return !bothScored ? `Salah satu atau kedua tim tidak mencetak gol (Menang: x${leg.odds}).` : `Kedua tim mencetak gol (Kalah: x0.00).`;
+
+      case 'DNB':
+        if (goalDiff === 0) return "Skor Seri, taruhan dikembalikan (Draw: x1.00).";
+        if (leg.subType === 'HOME') return goalDiff > 0 ? `Tuan Rumah menang (Menang: x${leg.odds}).` : `Tuan Rumah kalah (Kalah: x0.00).`;
+        return goalDiff < 0 ? `Tamu menang (Menang: x${leg.odds}).` : `Tamu kalah (Kalah: x0.00).`;
+
+      case 'DOUBLE_CHANCE':
+        if (leg.subType === '1X') return goalDiff >= 0 ? `Tuan Rumah menang atau seri (${leg.homeScore}-${leg.awayScore}) (Menang: x${leg.odds}).` : `Tuan Rumah kalah (Kalah: x0.00).`;
+        if (leg.subType === '12') return goalDiff !== 0 ? `Salah satu tim menang (${leg.homeScore}-${leg.awayScore}) (Menang: x${leg.odds}).` : `Skor seri (Kalah: x0.00).`;
+        if (leg.subType === 'X2') return goalDiff <= 0 ? `Tamu menang atau seri (${leg.homeScore}-${leg.awayScore}) (Menang: x${leg.odds}).` : `Tamu kalah (Kalah: x0.00).`;
+        return "";
+
+      case 'ODD_EVEN':
+        const isOdd = totalGoals % 2 !== 0;
+        const wonOE = (leg.subType === 'ODD' && isOdd) || (leg.subType === 'EVEN' && !isOdd);
+        return wonOE ? `Total gol ${totalGoals} sesuai target ${leg.subType} (Menang: x${leg.odds}).` : `Total gol ${totalGoals} tidak sesuai target ${leg.subType} (Kalah: x0.00).`;
+
+      case 'CORRECT_SCORE':
+        const scoreStr = `${leg.homeScore}-${leg.awayScore}`;
+        return leg.exactScore === scoreStr ? `Skor akhir tepat ${scoreStr} (Menang: x${leg.odds}).` : `Skor akhir ${scoreStr} tidak sesuai target ${leg.exactScore} (Kalah: x0.00).`;
+
+      case 'TOTAL_GOALS':
+        let wonTG = false;
+        if (leg.subType === '0-1' && totalGoals <= 1) wonTG = true;
+        if (leg.subType === '2-3' && (totalGoals === 2 || totalGoals === 3)) wonTG = true;
+        if (leg.subType === '4-6' && (totalGoals >= 4 && totalGoals <= 6)) wonTG = true;
+        if (leg.subType === '7+' && totalGoals >= 7) wonTG = true;
+        return wonTG ? `Total gol ${totalGoals} masuk range ${leg.subType} (Menang: x${leg.odds}).` : `Total gol ${totalGoals} di luar range ${leg.subType} (Kalah: x0.00).`;
+
+      default:
+        return `Hasil berdasarkan skor akhir ${leg.homeScore}-${leg.awayScore} dengan tipe taruhan ${leg.type}.`;
+    }
+  };
+
   const parlayCalculation = useMemo(() => {
     let currentMultiplier = 1.0;
     let finalStatus: BetResult = 'WIN';
@@ -174,7 +249,15 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
     else if (status === 'DRAW') payout = stake;
     else if (status === 'HALF_LOSE') payout = stake / 2;
     
-    return { payout, profit: payout - stake, roi: stake > 0 ? ((payout - stake) / stake) * 100 : 0, status };
+    return { 
+      payout, 
+      profit: payout - stake, 
+      roi: stake > 0 ? ((payout - stake) / stake) * 100 : 0, 
+      status,
+      explanation: getLegExplanation({ 
+        id: '0', match: '', type: betType, subType, handicap, odds, homeScore, awayScore, exactScore: exactScoreInput
+      })
+    };
   }, [betType, stake, odds, handicap, subType, homeScore, awayScore, exactScoreInput]);
 
   const addLeg = () => {
@@ -376,6 +459,12 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
                <div>
                  <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 mb-1">Single Outcome</p>
                  <h2 className="text-6xl font-black font-orbitron tracking-tighter uppercase">{singleCalculation.status.replace('_', ' ')}</h2>
+                 <div className="mt-6 p-4 bg-black/20 rounded-2xl border border-white/5 max-w-md mx-auto">
+                   <p className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-2">Analisis Hasil:</p>
+                   <p className="text-[11px] font-bold italic leading-relaxed">
+                     {singleCalculation.explanation}
+                   </p>
+                 </div>
                </div>
                <div className="grid grid-cols-2 gap-8 w-full pt-6 border-t border-white/5">
                  <div className="text-left text-zinc-200">
@@ -481,9 +570,14 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
                       </div>
                     </div>
                   </div>
-                  <div className={`md:w-32 flex flex-col items-center justify-center rounded-2xl border-2 ${getStatusColor(calculateLegStatus(leg))}`}>
-                    <span className="text-[8px] font-black uppercase opacity-60">Leg Status</span>
-                    <span className="text-[10px] font-black uppercase">{calculateLegStatus(leg).replace('_', ' ')}</span>
+                  <div className={`md:w-56 flex flex-col items-center justify-center p-4 rounded-2xl border-2 ${getStatusColor(calculateLegStatus(leg))}`}>
+                    <span className="text-[8px] font-black uppercase opacity-60 mb-1">Leg Status</span>
+                    <span className="text-[10px] font-black uppercase mb-3">{calculateLegStatus(leg).replace('_', ' ')}</span>
+                    <div className="w-full p-2 bg-black/20 rounded-lg border border-white/5">
+                      <p className="text-[9px] font-bold italic text-center opacity-80 leading-tight">
+                        {getLegExplanation(leg)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
