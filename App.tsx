@@ -17,7 +17,7 @@ import SlotWinCalc from './components/modules/SlotWinCalc';
 import Settings from './components/modules/Settings';
 import Toast from './components/ui/Toast';
 import ModuleNavigator from './components/ModuleNavigator';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PASARAN_SCHEDULE } from './constants';
 
 const DEFAULT_SETTINGS: AppSettings = {
