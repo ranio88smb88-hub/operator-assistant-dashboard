@@ -19,7 +19,8 @@ const SlotWinCalc: React.FC<Props> = ({ showToast }) => {
   };
 
   const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    const formatted = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(num);
+    return `Rp ${formatted}`;
   };
 
   const ProviderColumn = ({ title, provider, total, color }: { title: string, provider: 'PG' | 'PRAGMATIC', total: number, color: string }) => (
