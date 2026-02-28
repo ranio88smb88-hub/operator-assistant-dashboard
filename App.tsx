@@ -17,6 +17,7 @@ import SlotWinCalc from './components/modules/SlotWinCalc';
 import Settings from './components/modules/Settings';
 import Toast from './components/ui/Toast';
 import ModuleNavigator from './components/ModuleNavigator';
+import { motion, AnimatePresence } from 'motion/react';
 import { PASARAN_SCHEDULE } from './constants';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -124,26 +125,40 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (activeModule === 'HOME') {
-      return <ModuleNavigator onSelectModule={handleModuleChange} settings={settings} />;
-    }
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeModule}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          {(() => {
+            if (activeModule === 'HOME') {
+              return <ModuleNavigator onSelectModule={handleModuleChange} settings={settings} />;
+            }
 
-    switch (activeModule) {
-      case ModuleType.FOOTBALL_PRED: return <FootballPrediction showToast={showToast} />;
-      case ModuleType.TOGEL_PRED: return <TogelPrediction showToast={showToast} />;
-      case ModuleType.SYAIR_HOKI: return <SyairHoki showToast={showToast} />;
-      case ModuleType.BANK_VALIDATOR: return <BankValidator showToast={showToast} />;
-      case ModuleType.PASARAN_SCHEDULE: return <PasaranSchedule showToast={showToast} />;
-      case ModuleType.PRIZE_CALC: return <TogelPrizeCalc showToast={showToast} />;
-      case ModuleType.TOGEL_CALC: return <TogelCalculator showToast={showToast} />;
-      case ModuleType.FOOTBALL_CALC: return <FootballBetCalc showToast={showToast} />;
-      case ModuleType.RESULT_VIEWER: return <TogelResultViewer showToast={showToast} />;
-      case ModuleType.NAWALA_CHECK: return <NawalaCheck showToast={showToast} />;
-      case ModuleType.SHIO_REF: return <ShioReference showToast={showToast} />;
-      case ModuleType.SLOT_WIN_CALC: return <SlotWinCalc showToast={showToast} />;
-      case ModuleType.SETTINGS: return <Settings settings={settings} onUpdate={updateSettings} />;
-      default: return <ModuleNavigator onSelectModule={handleModuleChange} settings={settings} />;
-    }
+            switch (activeModule) {
+              case ModuleType.FOOTBALL_PRED: return <FootballPrediction showToast={showToast} />;
+              case ModuleType.TOGEL_PRED: return <TogelPrediction showToast={showToast} />;
+              case ModuleType.SYAIR_HOKI: return <SyairHoki showToast={showToast} />;
+              case ModuleType.BANK_VALIDATOR: return <BankValidator showToast={showToast} />;
+              case ModuleType.PASARAN_SCHEDULE: return <PasaranSchedule showToast={showToast} />;
+              case ModuleType.PRIZE_CALC: return <TogelPrizeCalc showToast={showToast} />;
+              case ModuleType.TOGEL_CALC: return <TogelCalculator showToast={showToast} />;
+              case ModuleType.FOOTBALL_CALC: return <FootballBetCalc showToast={showToast} />;
+              case ModuleType.RESULT_VIEWER: return <TogelResultViewer showToast={showToast} />;
+              case ModuleType.NAWALA_CHECK: return <NawalaCheck showToast={showToast} />;
+              case ModuleType.SHIO_REF: return <ShioReference showToast={showToast} />;
+              case ModuleType.SLOT_WIN_CALC: return <SlotWinCalc showToast={showToast} />;
+              case ModuleType.SETTINGS: return <Settings settings={settings} onUpdate={updateSettings} />;
+              default: return <ModuleNavigator onSelectModule={handleModuleChange} settings={settings} />;
+            }
+          })()}
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
   return (
