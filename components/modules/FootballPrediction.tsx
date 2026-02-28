@@ -14,18 +14,12 @@ interface ColorTheme {
 }
 
 const COLOR_THEMES: ColorTheme[] = [
-  { name: 'Classic Blue', primary: '#003366', secondary: '#66ccff', glow: '#0099ff' },
-  { name: 'Luxury Gold', primary: '#856d11', secondary: '#f5da6c', glow: '#ffd700' },
-  { name: 'Cyber Red', primary: '#8b0000', secondary: '#ff4d4d', glow: '#ff0000' },
-  { name: 'Deep Emerald', primary: '#004d40', secondary: '#1de9b6', glow: '#00ff88' },
-  { name: 'Royal Purple', primary: '#4b0082', secondary: '#da70d6', glow: '#bc13fe' },
-  { name: 'Sunset Orange', primary: '#e65100', secondary: '#ffb74d', glow: '#ff8c00' },
-  { name: 'Electric Pink', primary: '#880e4f', secondary: '#f06292', glow: '#ff1493' },
-  { name: 'Midnight Blue', primary: '#1a237e', secondary: '#7986cb', glow: '#3f51b5' },
-  { name: 'Toxic Green', primary: '#1b5e20', secondary: '#8bc34a', glow: '#44ff00' },
-  { name: 'Carbon Silver', primary: '#37474f', secondary: '#cfd8dc', glow: '#ffffff' },
-  { name: 'Ocean Cyan', primary: '#006064', secondary: '#4dd0e1', glow: '#00e5ff' },
-  { name: 'Blood Dark', primary: '#4a0e0e', secondary: '#f44336', glow: '#ff4444' },
+  { name: 'Luxury Gold', primary: '#1a1a1a', secondary: '#d1c462', glow: '#FFD700' },
+  { name: 'Cyber Blue', primary: '#0a0a1a', secondary: '#00f2ff', glow: '#ffffff' },
+  { name: 'Blood Red', primary: '#1a0505', secondary: '#ff3e3e', glow: '#ffffff' },
+  { name: 'Emerald Green', primary: '#051a05', secondary: '#00ff88', glow: '#ffffff' },
+  { name: 'Royal Purple', primary: '#10051a', secondary: '#bc13fe', glow: '#ffffff' },
+  { name: 'Neon Orange', primary: '#1a1005', secondary: '#ff8c00', glow: '#ffffff' },
 ];
 
 interface MatchData {
@@ -72,6 +66,25 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     return data;
   };
 
+  const getFormattedDate = (dateStr: string) => {
+    if (!dateStr) return "⚽ PREDIKSI BOLA HARI INI ⚽";
+    try {
+      const [day, month] = dateStr.split('/');
+      const year = new Date().getFullYear();
+      const dateObj = new Date(year, parseInt(month) - 1, parseInt(day));
+      
+      const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'];
+      const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+      
+      const dayName = days[dateObj.getDay()];
+      const monthName = months[dateObj.getMonth()];
+      
+      return `⚽ ${dayName}, ${day} ${monthName} ${year} ⚽`;
+    } catch (e) {
+      return "⚽ PREDIKSI BOLA HARI INI ⚽";
+    }
+  };
+
   const generateScript = () => {
     if (!inputText.trim()) {
       showToast('Masukkan data prediksi terlebih dahulu', 'error');
@@ -85,27 +98,34 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     }
 
     const theme = selectedTheme;
+    const dateHeader = getFormattedDate(parsedData[0]?.matches[0]?.date);
     
-    let tableRows = '';
+    let tablesHtml = '';
     parsedData.forEach(group => {
-      tableRows += `
+      tablesHtml += `
+<table class="prediction-table">
+<thead>
 <tr>
-  <td colspan="3" class="league">⚽ ${group.league}</td>
+<th colspan="3">${group.league}</th>
 </tr>
 <tr>
-  <th>TANGGAL</th>
-  <th>PERTANDINGAN</th>
-  <th>PREDIKSI</th>
-</tr>`;
+<th>TANGGAL & WAKTU</th>
+<th>PERTANDINGAN</th>
+<th>SKOR</th>
+</tr>
+</thead>
+<tbody>`;
       group.matches.forEach(m => {
-        tableRows += `
+        tablesHtml += `
 <tr>
-  <td>${m.date}<br /><span>${m.time}</span></td>
-  <td>${m.teams}</td>
-  <td>${m.score}</td>
+<td>${m.date} ${m.time}</td>
+<td>${m.teams}</td>
+<td>${m.score}</td>
 </tr>`;
       });
-      tableRows += `<tr><td colspan="3" style="height: 15px;"></td></tr>`;
+      tablesHtml += `
+</tbody>
+</table>`;
     });
 
     const fullHTML = `<!DOCTYPE html>
@@ -113,103 +133,31 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
 <head>
 <meta charset="UTF-8">
 <style>
-body {
-  background: #111 url("https://cdn.areabermain.club/assets/cdn/az2/2026/01/17/20260117/fd23ec7444085ce9baaec2e5ef286006/abadiwin-background.jpg") center/cover fixed no-repeat;
-  margin:0;
-  font-family: Arial, sans-serif;
-  color:#fff;
-  padding: 20px;
-}
-.arena-wrap {
-  background: rgba(0,0,0,0.88);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 35px ${theme.glow}b3;
-  animation: fadeIn 1.5s ease;
-  max-width: 1000px;
-  margin: auto;
-}
-@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-.logo { text-align:center; margin-bottom:15px; }
-.logo img { max-width:260px; filter: drop-shadow(0 0 20px ${theme.glow}); animation: glow 2s infinite alternate; }
-@keyframes glow { from {filter: drop-shadow(0 0 10px ${theme.secondary});} to {filter: drop-shadow(0 0 30px #ffffff);} }
-.marquee {
-  background: linear-gradient(90deg,${theme.primary},${theme.secondary},${theme.primary});
-  color:#fff;
-  padding:12px;
-  overflow:hidden;
-  white-space:nowrap;
-  font-weight:bold;
-  margin-bottom:15px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px ${theme.glow};
-}
-.marquee span { display:inline-block; animation: run 25s linear infinite; }
-@keyframes run { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: rgba(30,30,30,0.9);
-  box-shadow: 0 0 20px ${theme.glow}b3;
-  font-size: 14px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-th {
-  background: linear-gradient(135deg,${theme.primary},${theme.secondary});
-  color: #fff;
-  text-align: center;
-  padding: 10px;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-bottom: 2px solid ${theme.secondary};
-  text-shadow: 0 0 6px #000;
-}
-td {
-  padding: 8px 10px;
-  border-bottom: 1px solid ${theme.primary};
-  color:#cceeff;
-  text-align: center;
-  word-break: break-word;
-  transition: 0.3s;
-}
-td span { font-size: 12px; color: ${theme.secondary}; }
-tr:hover td { background: ${theme.primary}b3; color:#fff; font-weight:bold; transform: scale(1.02); }
-.league {
-  background: linear-gradient(135deg,${theme.primary},${theme.glow});
-  color:#cceeff;
-  font-weight:bold;
-  text-align:center;
-  padding:14px;
-  font-size:17px;
-  letter-spacing:1px;
-  text-shadow: 0 0 10px ${theme.glow};
-  border-radius: 8px 8px 0 0;
-}
-@media only screen and (max-width: 420px) {
-  table { font-size: 11px; border-radius:6px; }
-  td span { font-size: 10px; }
-  th { padding: 6px 4px; font-size: 12px; }
-  .league { font-size: 16px; padding: 10px 5px; }
-}
+    body { background-color: #050505; margin: 0; padding: 20px; font-family: 'Arial', sans-serif; }
+    .date { text-align: center; font-size: 16px; color: ${theme.glow}; margin-bottom: 15px; font-weight: bold; background: linear-gradient(45deg, ${theme.primary}, ${theme.secondary}); padding: 8px; border-radius: 5px; }
+    .prediction-table { width: 100%; border-collapse: collapse; margin: 15px 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, ${theme.primary}, #2a0a0a); font-size: 14px; }
+    .prediction-table th { background: linear-gradient(45deg, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; text-align: center; padding: 12px 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid ${theme.glow}; }
+    .prediction-table td { text-align: center; padding: 10px 8px; color: ${theme.secondary}; border-bottom: 1px solid #333; background: rgba(0, 0, 0, 0.7); }
+    .prediction-table tr:nth-child(even) td { background: rgba(30, 0, 0, 0.7); }
+    .prediction-table tr:hover td { background: rgba(139, 0, 0, 0.5); color: ${theme.glow}; }
+    .marquee { overflow: hidden; white-space: nowrap; background: linear-gradient(90deg, ${theme.primary}, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 5px; margin-bottom: 15px; }
+    .marquee p { display: inline-block; animation: marquee 20s linear infinite; padding-left: 100%; margin: 0; }
+    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    @media (max-width: 768px) { .prediction-table { font-size: 12px; } .prediction-table th, .prediction-table td { padding: 8px 5px; font-size: 11px; } }
+    @media (max-width: 480px) { .prediction-table { font-size: 10px; } .prediction-table th, .prediction-table td { padding: 6px 3px; font-size: 9px; } }
 </style>
 </head>
 <body>
-<div class="arena-wrap" id="resultArea">
-<div class="logo"><img src="https://cdn.areabermain.club/assets/cdn/az2/2026/01/17/20260117/906884f06ce7e9d84c4fb76480da1e49/abadiwin-logoacc.png" /></div>
-<div class="marquee"><span>🔥 Prediksi Bola Terupdate &bull; Analisis Akurat &bull; ABADIWIN 🔥</span></div>
-<table id="tabel">
-<tbody>
-${tableRows}
-</tbody>
-</table>
-</div>
+    <div class="date">${dateHeader}</div>
+    <div class="marquee">
+        <p>🌟 DAFTAR & PASANG TARUHAN ANDA DI LIGABANDOT - PREDIKSI TERAKURAT SETIAP HARI! 🌟</p>
+    </div>
+    ${tablesHtml}
 </body>
 </html>`.trim();
 
     setGeneratedHTML(fullHTML);
-    setOutputMode('preview'); // Auto switch to preview on generate
+    setOutputMode('preview');
     showToast('Script berhasil dibuat!', 'success');
   };
 
