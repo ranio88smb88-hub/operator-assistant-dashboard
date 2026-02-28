@@ -53,7 +53,10 @@ const BET_OPTIONS_4D: Record<string, BetOption[]> = {
     { label: "2D BB TEPAT", mult: 70, disc: 0 },
   ],
   "COLOK & LAINNYA": [
-    { label: "COLOK BEBAS", mult: 1.5, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (1x)", mult: 1.5, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (2x)", mult: 3, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (3x)", mult: 4.5, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (4x)", mult: 6, disc: 6, isSpecial: true },
     { label: "MACAU 2 ANGKA", mult: 7, disc: 10, isSpecial: true },
     { label: "MACAU 3 ANGKA", mult: 11, disc: 10, isSpecial: true },
     { label: "MACAU 4 ANGKA", mult: 18, disc: 10, isSpecial: true },
@@ -93,7 +96,11 @@ const BET_OPTIONS_5D: Record<string, BetOption[]> = {
     { label: "CB 4D (4)", mult: 50, disc: 10, isSpecial: true },
     { label: "CB 4D (5)", mult: 200, disc: 10, isSpecial: true },
     { label: "2 KOMBINASI", mult: 2.7, disc: 8, isSpecial: true },
-    { label: "COLOK BEBAS", mult: 0.9, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (1x)", mult: 0.9, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (2x)", mult: 1.8, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (3x)", mult: 2.7, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (4x)", mult: 3.6, disc: 6, isSpecial: true },
+    { label: "COLOK BEBAS (5x)", mult: 4.5, disc: 6, isSpecial: true },
     { label: "SHIO", mult: 9.5, disc: 8, isSpecial: true },
   ]
 };
@@ -289,7 +296,7 @@ export default function TogelPrizeCalc({ showToast }: {
                 title="Colok & Kombinasi (4D)" 
                 color="text-indigo-400"
                 data={[
-                  { label: "Colok Bebas", value: "1.5x", sub: "Diskon 6%" },
+                  { label: "Colok Bebas", value: "1.5x / 3x / 4.5x / 6x", sub: "Diskon 6%" },
                   { label: "Colok Macau (2D)", value: "7x / 11x / 18x", sub: "Diskon 10%" },
                   { label: "Colok Naga", value: "23x / 35x", sub: "Diskon 10%" },
                   { label: "Colok Jitu", value: "8x", sub: "Diskon 6%" },
@@ -336,7 +343,7 @@ export default function TogelPrizeCalc({ showToast }: {
                   { label: "CB 4D", value: "50x / 200x", sub: "Diskon 10%" },
                   { label: "Colok Jitu", value: "8x", sub: "Diskon 6%" },
                   { label: "Kombinasi", value: "2.7x", sub: "Diskon 8%" },
-                  { label: "Colok Bebas", value: "0.9x", sub: "Diskon 6%" },
+                  { label: "Colok Bebas", value: "0.9x / 1.8x / 2.7x / 3.6x / 4.5x", sub: "Diskon 6%" },
                 ]}
               />
               <PrizeBox 
