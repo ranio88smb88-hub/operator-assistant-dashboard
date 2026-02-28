@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+* {
+  cursor: url('https://cdn.cursors-4u.net/css-previews/electricity-lightning-e3423565-css.webp') 8 4, auto !important;
+}
+
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
   --font-inter: "Inter", sans-serif;
