@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ModuleType, AppSettings } from '../types';
 import { Shield, Activity, Cpu, Database, Network, Zap, Coins, ChevronRight } from 'lucide-react';
 
