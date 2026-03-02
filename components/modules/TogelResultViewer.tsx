@@ -1,39 +1,51 @@
 
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, Calendar, Save, Trash2, Copy, FileText, Send, Sparkles } from 'lucide-react';
+import { ZODIAC_ANIMALS, LUNAR_NEW_YEARS } from '../../constants';
 
 interface Props {
   showToast: (message: string, type?: 'success' | 'error') => void;
 }
 
-const SHIO_MAP: Record<number, string> = {
-  1: 'ULAR',
-  2: 'NAGA',
-  3: 'KELINCI',
-  4: 'MACAN',
-  5: 'KERBAU',
-  6: 'TIKUS',
-  7: 'BABI',
-  8: 'ANJING',
-  9: 'AYAM',
-  10: 'MONYET',
-  11: 'KAMBING',
-  0: 'KUDA'
-};
-
-const getShio = (numStr: string): string => {
-  if (!numStr || numStr.length < 2) return '???';
-  const last2 = parseInt(numStr.slice(-2));
-  if (isNaN(last2)) return '???';
-  
-  // Logika Shio Togel 2025/2026 (Ular = 01)
-  // Rumus: (Angka % 12). Jika 0 maka Kuda (12)
-  const index = last2 % 12;
-  return SHIO_MAP[index as keyof typeof SHIO_MAP] || 'KUDA';
-};
-
 export default function TogelResultViewer({ showToast }: Props) {
   const [inputText, setInputText] = useState('');
+
+  const currentShioMap = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    
+    let currentLunar = LUNAR_NEW_YEARS[0];
+    for (let i = LUNAR_NEW_YEARS.length - 1; i >= 0; i--) {
+      if (todayStr >= LUNAR_NEW_YEARS[i].date) {
+        currentLunar = LUNAR_NEW_YEARS[i];
+        break;
+      }
+    }
+
+    const reversedZodiac = [...ZODIAC_ANIMALS].reverse();
+    const anchorIndex = reversedZodiac.indexOf(currentLunar.animal);
+    
+    const shiftedZodiac = [
+      ...reversedZodiac.slice(anchorIndex),
+      ...reversedZodiac.slice(0, anchorIndex)
+    ];
+
+    const map: Record<number, string> = {};
+    shiftedZodiac.forEach((animal, i) => {
+      const index = (i + 1) % 12;
+      map[index] = animal;
+    });
+    return map;
+  }, []);
+
+  const getShio = (numStr: string): string => {
+    if (!numStr || numStr.length < 2) return '???';
+    const last2 = parseInt(numStr.slice(-2));
+    if (isNaN(last2)) return '???';
+    
+    const index = last2 % 12;
+    return currentShioMap[index] || '???';
+  };
   
   const generatedScript = useMemo(() => {
     if (!inputText.trim()) return '';
@@ -198,15 +210,15 @@ Selamat Kepada Pemenang, Salam JACKPOT`.trim();
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
            <div className="space-y-3">
              <h4 className="text-[11px] font-black text-zinc-400 uppercase tracking-widest flex items-center">
-               <Calendar className="w-4 h-4 mr-2 text-blue-500" /> SHIO CALCULATION PROTOCOL (2025/2026)
+               <Calendar className="w-4 h-4 mr-2 text-blue-500" /> SHIO CALCULATION PROTOCOL
              </h4>
              <p className="text-[10px] text-zinc-600 leading-relaxed font-bold italic">
-               Sistem menggunakan tabel Shio Ular (01) sebagai patokan dasar. Angka keberuntungan (Shio) 
+               Sistem menggunakan tabel Shio tahun lunar aktif sebagai patokan dasar. Angka keberuntungan (Shio) 
                diambil dari 2 angka belakang (2D) dari Prize 1. Algoritma: (Angka % 12).
              </p>
            </div>
            <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-              {Object.entries(SHIO_MAP).map(([idx, name]) => (
+              {Object.entries(currentShioMap).map(([idx, name]) => (
                 <div key={idx} className="bg-white/5 p-2 rounded-xl text-center border border-white/5">
                   <div className="text-[8px] text-zinc-600 font-black mb-1">{idx.padStart(2, '0')}</div>
                   <div className="text-[9px] text-zinc-400 font-bold">{name}</div>
