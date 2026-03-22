@@ -150,16 +150,32 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
       case 'OVER_UNDER':
         const ouDiff = totalGoals - leg.handicap;
         if (leg.subType === 'OVER') {
-          if (ouDiff > 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line > 0.25 (Over Menang: x${leg.odds}).`;
-          if (ouDiff === 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line tepat 0.25 (Over Menang Setengah: x${((leg.odds + 1) / 2).toFixed(3)}).`;
+          if (ouDiff > 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line (Over Menang: x${leg.odds}).`;
+          if (ouDiff === 0.25) {
+            const low = leg.handicap - 0.25;
+            const high = leg.handicap + 0.25;
+            return `OU ${leg.handicap} (Over) dibagi ke Over ${low} & Over ${high}. Total ${totalGoals} gol: Over ${low} (Win) & Over ${high} (Draw) = Menang Setengah (x${((leg.odds + 1) / 2).toFixed(3)}).`;
+          }
           if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line (Draw: x1.00).`;
-          if (ouDiff === -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Kurang dari line 0.25 (Over Kalah Setengah: x0.50).`;
+          if (ouDiff === -0.25) {
+            const low = leg.handicap - 0.25;
+            const high = leg.handicap + 0.25;
+            return `OU ${leg.handicap} (Over) dibagi ke Over ${low} & Over ${high}. Total ${totalGoals} gol: Over ${low} (Draw) & Over ${high} (Lose) = Kalah Setengah (x0.50).`;
+          }
           return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line (Over Kalah: x0.00).`;
         } else {
-          if (ouDiff < -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line > 0.25 (Under Menang: x${leg.odds}).`;
-          if (ouDiff === -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line tepat 0.25 (Under Menang Setengah: x${((leg.odds + 1) / 2).toFixed(3)}).`;
+          if (ouDiff < -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line (Under Menang: x${leg.odds}).`;
+          if (ouDiff === -0.25) {
+            const low = leg.handicap - 0.25;
+            const high = leg.handicap + 0.25;
+            return `OU ${leg.handicap} (Under) dibagi ke Under ${low} & Under ${high}. Total ${totalGoals} gol: Under ${low} (Draw) & Under ${high} (Win) = Menang Setengah (x${((leg.odds + 1) / 2).toFixed(3)}).`;
+          }
           if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line (Draw: x1.00).`;
-          if (ouDiff === 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line 0.25 (Under Kalah Setengah: x0.50).`;
+          if (ouDiff === 0.25) {
+            const low = leg.handicap - 0.25;
+            const high = leg.handicap + 0.25;
+            return `OU ${leg.handicap} (Under) dibagi ke Under ${low} & Under ${high}. Total ${totalGoals} gol: Under ${low} (Lose) & Under ${high} (Draw) = Kalah Setengah (x0.50).`;
+          }
           return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di atas line (Under Kalah: x0.00).`;
         }
 
@@ -547,16 +563,95 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <label className="text-[8px] font-black text-zinc-500 uppercase">Market</label>
-                        <select value={leg.type} onChange={e => updateLeg(leg.id, 'type', e.target.value)} className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-bold text-zinc-300 outline-none">
+                        <select 
+                          value={leg.type} 
+                          onChange={e => {
+                            const newType = e.target.value;
+                            let newSubType = 'HOME';
+                            if (newType === 'OVER_UNDER') newSubType = 'OVER';
+                            else if (newType === 'BTTS') newSubType = 'YES';
+                            else if (newType === 'ODD_EVEN') newSubType = 'ODD';
+                            else if (newType === 'DOUBLE_CHANCE') newSubType = '1X';
+                            else if (newType === 'TOTAL_GOALS') newSubType = '2-3';
+                            
+                            setParlayLegs(parlayLegs.map(l => l.id === leg.id ? { ...l, type: newType, subType: newSubType } : l));
+                          }} 
+                          className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-bold text-zinc-300 outline-none"
+                        >
                           <option value="ASIAN_HANDICAP">HDP</option>
                           <option value="OVER_UNDER">O/U</option>
                           <option value="1X2">1X2</option>
+                          <option value="DOUBLE_CHANCE">D. Chance</option>
+                          <option value="BTTS">BTTS</option>
+                          <option value="ODD_EVEN">O/E</option>
+                          <option value="DNB">DNB</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[8px] font-black text-zinc-500 uppercase">Selection</label>
+                        <select 
+                          value={leg.subType} 
+                          onChange={e => updateLeg(leg.id, 'subType', e.target.value)} 
+                          className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-bold text-zinc-300 outline-none"
+                        >
+                          {leg.type === 'ASIAN_HANDICAP' && (
+                            <>
+                              <option value="HOME">HOME</option>
+                              <option value="AWAY">AWAY</option>
+                            </>
+                          )}
+                          {leg.type === 'OVER_UNDER' && (
+                            <>
+                              <option value="OVER">OVER</option>
+                              <option value="UNDER">UNDER</option>
+                            </>
+                          )}
+                          {leg.type === '1X2' && (
+                            <>
+                              <option value="HOME">HOME</option>
+                              <option value="DRAW">DRAW</option>
+                              <option value="AWAY">AWAY</option>
+                            </>
+                          )}
+                          {leg.type === 'DOUBLE_CHANCE' && (
+                            <>
+                              <option value="1X">1X</option>
+                              <option value="12">12</option>
+                              <option value="X2">X2</option>
+                            </>
+                          )}
+                          {leg.type === 'BTTS' && (
+                            <>
+                              <option value="YES">YES</option>
+                              <option value="NO">NO</option>
+                            </>
+                          )}
+                          {leg.type === 'ODD_EVEN' && (
+                            <>
+                              <option value="ODD">ODD</option>
+                              <option value="EVEN">EVEN</option>
+                            </>
+                          )}
+                          {leg.type === 'DNB' && (
+                            <>
+                              <option value="HOME">HOME</option>
+                              <option value="AWAY">AWAY</option>
+                            </>
+                          )}
                         </select>
                       </div>
                       <div className="space-y-2">
                         <label className="text-[8px] font-black text-zinc-500 uppercase">Line / Odds</label>
                         <div className="flex gap-2">
-                          <input type="number" step="0.25" value={leg.handicap} onChange={e => updateLeg(leg.id, 'handicap', Number(e.target.value))} className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-black text-white" placeholder="Line" />
+                          <input 
+                            type="number" 
+                            step="0.25" 
+                            value={leg.handicap} 
+                            disabled={!['ASIAN_HANDICAP', 'OVER_UNDER'].includes(leg.type)}
+                            onChange={e => updateLeg(leg.id, 'handicap', Number(e.target.value))} 
+                            className={`w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-black text-white ${!['ASIAN_HANDICAP', 'OVER_UNDER'].includes(leg.type) ? 'opacity-30' : ''}`} 
+                            placeholder="Line" 
+                          />
                           <input type="number" step="0.01" value={leg.odds} onChange={e => updateLeg(leg.id, 'odds', Number(e.target.value))} className="w-full bg-black/40 border border-white/5 rounded-xl p-3 text-[10px] font-black text-[var(--primary-color)]" placeholder="Odds" />
                         </div>
                       </div>
@@ -633,7 +728,7 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
         <div className="space-y-8 animate-in fade-in duration-500">
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
              <MarketCard title="Asian Handicap" items={["0.25 (Quarter): Menang 1/2 jika seri.", "0.50 (Half): Menang/Kalah mutlak.", "0.75 (Three-Quarter): Menang 1/2 jika selisih 1 gol."]} icon={<Target className="w-4 h-4" />} />
-             <MarketCard title="Over / Under" items={["OU 2.25: Seri 2 gol = Menang 1/2 (Under).", "OU 2.75: Seri 3 gol = Kalah 1/2 (Under).", "Total gol kedua tim dijumlahkan."]} icon={<Layers className="w-4 h-4" />} />
+             <MarketCard title="Over / Under" items={["OU 2.25: Total 2 gol = Menang 1/2 (Under).", "OU 2.75: Total 3 gol = Kalah 1/2 (Under).", "Handicap .25/.75 membagi taruhan menjadi dua bagian."]} icon={<Layers className="w-4 h-4" />} />
              <MarketCard title="Parlay Calculation" items={["Win Full: x Odds.", "Half Win: x ((Odds+1)/2).", "Half Lose: x 0.5 (Total Payout / 2).", "Draw: x 1.00 (Modal Balik)."]} icon={<Activity className="w-4 h-4" />} />
            </div>
         </div>
