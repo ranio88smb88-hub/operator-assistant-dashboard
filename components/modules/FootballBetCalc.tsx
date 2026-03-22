@@ -141,42 +141,42 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
     switch (leg.type) {
       case 'ASIAN_HANDICAP':
         const hdpFinal = goalDiff + leg.handicap;
-        if (hdpFinal > 0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = ${hdpFinal}. Unggul > 0.25 (Menang Penuh: x${leg.odds}).`;
-        if (hdpFinal === 0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = 0.25. Unggul tepat 0.25 (Menang Setengah: x${((leg.odds + 1) / 2).toFixed(3)}).`;
-        if (hdpFinal === 0) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = 0. Skor Seri (Draw: x1.00).`;
-        if (hdpFinal === -0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = -0.25. Tertinggal 0.25 (Kalah Setengah: x0.50).`;
-        return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = ${hdpFinal}. Tertinggal (Kalah Penuh: x0.00).`;
+        if (hdpFinal > 0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = ${hdpFinal}. Karena > 0.25, Menang Penuh. Rumus: Odds (${leg.odds}).`;
+        if (hdpFinal === 0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = 0.25. Karena tepat 0.25, Menang Setengah. Rumus: ((Odds ${leg.odds} + 1) / 2) = ${((leg.odds + 1) / 2).toFixed(3)}.`;
+        if (hdpFinal === 0) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = 0. Skor Seri, Taruhan Kembali. Rumus: x1.00.`;
+        if (hdpFinal === -0.25) return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = -0.25. Karena tepat -0.25, Kalah Setengah. Rumus: x0.50.`;
+        return `Skor ${leg.homeScore}-${leg.awayScore} (Selisih ${goalDiff}) + HDP ${hdpLabel} = ${hdpFinal}. Karena < -0.25, Kalah Penuh. Rumus: x0.00.`;
 
       case 'OVER_UNDER':
         const ouDiff = totalGoals - leg.handicap;
         if (leg.subType === 'OVER') {
-          if (ouDiff > 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Melebihi line (Over Menang: x${leg.odds}).`;
+          if (ouDiff > 0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Selisih ${ouDiff} (> 0.25), Over Menang Penuh. Rumus: Odds (${leg.odds}).`;
           if (ouDiff === 0.25) {
             const low = leg.handicap - 0.25;
             const high = leg.handicap + 0.25;
-            return `OU ${leg.handicap} (Over) dibagi ke Over ${low} & Over ${high}. Total ${totalGoals} gol: Over ${low} (Win) & Over ${high} (Draw) = Menang Setengah (x${((leg.odds + 1) / 2).toFixed(3)}).`;
+            return `OU ${leg.handicap} (Over) dibagi ke Over ${low} (Win) & Over ${high} (Draw). Menang Setengah. Rumus: ((Odds ${leg.odds} + 1) / 2) = ${((leg.odds + 1) / 2).toFixed(3)}.`;
           }
-          if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line (Draw: x1.00).`;
+          if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line, Draw. Rumus: x1.00.`;
           if (ouDiff === -0.25) {
             const low = leg.handicap - 0.25;
             const high = leg.handicap + 0.25;
-            return `OU ${leg.handicap} (Over) dibagi ke Over ${low} & Over ${high}. Total ${totalGoals} gol: Over ${low} (Draw) & Over ${high} (Lose) = Kalah Setengah (x0.50).`;
+            return `OU ${leg.handicap} (Over) dibagi ke Over ${low} (Draw) & Over ${high} (Lose). Kalah Setengah. Rumus: x0.50.`;
           }
-          return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line (Over Kalah: x0.00).`;
+          return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Selisih ${ouDiff}, Over Kalah Penuh. Rumus: x0.00.`;
         } else {
-          if (ouDiff < -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di bawah line (Under Menang: x${leg.odds}).`;
+          if (ouDiff < -0.25) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Selisih ${ouDiff} (< -0.25), Under Menang Penuh. Rumus: Odds (${leg.odds}).`;
           if (ouDiff === -0.25) {
             const low = leg.handicap - 0.25;
             const high = leg.handicap + 0.25;
-            return `OU ${leg.handicap} (Under) dibagi ke Under ${low} & Under ${high}. Total ${totalGoals} gol: Under ${low} (Draw) & Under ${high} (Win) = Menang Setengah (x${((leg.odds + 1) / 2).toFixed(3)}).`;
+            return `OU ${leg.handicap} (Under) dibagi ke Under ${low} (Draw) & Under ${high} (Win). Menang Setengah. Rumus: ((Odds ${leg.odds} + 1) / 2) = ${((leg.odds + 1) / 2).toFixed(3)}.`;
           }
-          if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line (Draw: x1.00).`;
+          if (ouDiff === 0) return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Tepat di line, Draw. Rumus: x1.00.`;
           if (ouDiff === 0.25) {
             const low = leg.handicap - 0.25;
             const high = leg.handicap + 0.25;
-            return `OU ${leg.handicap} (Under) dibagi ke Under ${low} & Under ${high}. Total ${totalGoals} gol: Under ${low} (Lose) & Under ${high} (Draw) = Kalah Setengah (x0.50).`;
+            return `OU ${leg.handicap} (Under) dibagi ke Under ${low} (Lose) & Under ${high} (Draw). Kalah Setengah. Rumus: x0.50.`;
           }
-          return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Di atas line (Under Kalah: x0.00).`;
+          return `Total Gol ${totalGoals} vs Line ${leg.handicap}. Selisih ${ouDiff}, Under Kalah Penuh. Rumus: x0.00.`;
         }
 
       case '1X2':
@@ -226,23 +226,36 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
   const parlayCalculation = useMemo(() => {
     let currentMultiplier = 1.0;
     let finalStatus: BetResult = 'WIN';
+    const steps: string[] = [];
     
     for (const leg of parlayLegs) {
       const status = calculateLegStatus(leg);
+      let legMult = 1.0;
+      
       if (status === 'LOSE') {
+        legMult = 0;
         currentMultiplier = 0;
         finalStatus = 'LOSE';
+        steps.push(`Match ${parlayLegs.indexOf(leg) + 1}: Kalah Penuh (x0.00)`);
         break;
       } else if (status === 'HALF_WIN') {
-        currentMultiplier *= (leg.odds + 1) / 2;
+        legMult = (leg.odds + 1) / 2;
+        currentMultiplier *= legMult;
         if (finalStatus !== 'HALF_LOSE') finalStatus = 'HALF_WIN';
+        steps.push(`Match ${parlayLegs.indexOf(leg) + 1}: Menang Setengah (x${legMult.toFixed(3)})`);
       } else if (status === 'HALF_LOSE') {
-        currentMultiplier *= 0.5;
+        legMult = 0.5;
+        currentMultiplier *= legMult;
         finalStatus = 'HALF_LOSE';
+        steps.push(`Match ${parlayLegs.indexOf(leg) + 1}: Kalah Setengah (x0.50)`);
       } else if (status === 'DRAW') {
-        currentMultiplier *= 1.0;
+        legMult = 1.0;
+        currentMultiplier *= legMult;
+        steps.push(`Match ${parlayLegs.indexOf(leg) + 1}: Seri (x1.00)`);
       } else {
-        currentMultiplier *= leg.odds;
+        legMult = leg.odds;
+        currentMultiplier *= legMult;
+        steps.push(`Match ${parlayLegs.indexOf(leg) + 1}: Menang Penuh (x${legMult.toFixed(3)})`);
       }
     }
 
@@ -251,19 +264,34 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
       payout,
       profit: payout - parlayStake,
       status: finalStatus,
-      multiplier: currentMultiplier
+      multiplier: currentMultiplier,
+      steps
     };
   }, [parlayLegs, parlayStake]);
 
-  const singleCalculation = useMemo((): PayoutDetail => {
+  const singleCalculation = useMemo((): PayoutDetail & { payoutFormula: string } => {
     const status = calculateLegStatus({ 
       id: '0', match: '', type: betType, subType, handicap, odds, homeScore, awayScore, exactScore: exactScoreInput
     });
     let payout = 0;
-    if (status === 'WIN') payout = stake * odds;
-    else if (status === 'HALF_WIN') payout = stake + (stake * (odds - 1) / 2);
-    else if (status === 'DRAW') payout = stake;
-    else if (status === 'HALF_LOSE') payout = stake / 2;
+    let payoutFormula = "";
+    
+    if (status === 'WIN') {
+      payout = stake * odds;
+      payoutFormula = `Stake (${stake.toLocaleString('id-ID')}) × Odds (${odds}) = ${payout.toLocaleString('id-ID')}`;
+    } else if (status === 'HALF_WIN') {
+      payout = stake + (stake * (odds - 1) / 2);
+      payoutFormula = `Stake (${stake.toLocaleString('id-ID')}) + (Stake × (Odds - 1) / 2) = ${payout.toLocaleString('id-ID')}`;
+    } else if (status === 'DRAW') {
+      payout = stake;
+      payoutFormula = `Stake (${stake.toLocaleString('id-ID')}) × 1.00 = ${payout.toLocaleString('id-ID')}`;
+    } else if (status === 'HALF_LOSE') {
+      payout = stake / 2;
+      payoutFormula = `Stake (${stake.toLocaleString('id-ID')}) / 2 = ${payout.toLocaleString('id-ID')}`;
+    } else {
+      payout = 0;
+      payoutFormula = `Stake (${stake.toLocaleString('id-ID')}) × 0.00 = 0`;
+    }
     
     return { 
       payout, 
@@ -272,7 +300,8 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
       status,
       explanation: getLegExplanation({ 
         id: '0', match: '', type: betType, subType, handicap, odds, homeScore, awayScore, exactScore: exactScoreInput
-      })
+      }),
+      payoutFormula
     };
   }, [betType, stake, odds, handicap, subType, homeScore, awayScore, exactScoreInput]);
 
@@ -475,11 +504,19 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
                <div>
                  <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-60 mb-1">Single Outcome</p>
                  <h2 className="text-6xl font-black font-orbitron tracking-tighter uppercase">{singleCalculation.status.replace('_', ' ')}</h2>
-                 <div className="mt-6 p-4 bg-black/20 rounded-2xl border border-white/5 max-w-md mx-auto">
-                   <p className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-2">Analisis Hasil:</p>
-                   <p className="text-[11px] font-bold italic leading-relaxed">
-                     {singleCalculation.explanation}
-                   </p>
+                 <div className="mt-6 space-y-3 max-w-md mx-auto">
+                   <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
+                     <p className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-2">Analisis Hasil:</p>
+                     <p className="text-[11px] font-bold italic leading-relaxed">
+                       {singleCalculation.explanation}
+                     </p>
+                   </div>
+                   <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
+                     <p className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-2">Rumus Payout:</p>
+                     <p className="text-[11px] font-mono font-bold text-[var(--primary-color)]">
+                       {singleCalculation.payoutFormula}
+                     </p>
+                   </div>
                  </div>
                </div>
                <div className="grid grid-cols-2 gap-8 w-full pt-6 border-t border-white/5">
@@ -704,6 +741,30 @@ const FootballBetCalc: React.FC<{ showToast: (msg: string, type?: 'success' | 'e
                </div>
 
                <div className="w-full space-y-4">
+                 <div className="p-4 bg-black/40 rounded-2xl border border-white/5 space-y-3">
+                   <p className="text-[9px] font-black uppercase tracking-widest opacity-50 text-left">Breakdown Perkalian:</p>
+                   <div className="space-y-2">
+                     {parlayCalculation.steps.map((step, i) => (
+                       <div key={i} className="flex items-center justify-between text-[10px] font-bold italic text-zinc-400">
+                         <span>{step}</span>
+                         {i < parlayCalculation.steps.length - 1 && <span className="text-zinc-700 mx-2">×</span>}
+                       </div>
+                     ))}
+                     <div className="pt-2 border-t border-white/5 flex justify-between items-center">
+                       <span className="text-[10px] font-black text-zinc-500 uppercase">Total Odds</span>
+                       <span className="text-sm font-black text-[var(--primary-color)]">@{parlayCalculation.multiplier.toFixed(3)}</span>
+                     </div>
+                     <div className="pt-2 flex justify-between items-center text-[10px] font-mono text-zinc-500">
+                       <span>Rumus:</span>
+                       <span>Stake × Total Odds = Payout</span>
+                     </div>
+                     <div className="flex justify-between items-center text-[10px] font-mono text-[var(--primary-color)]">
+                       <span>{parlayStake.toLocaleString('id-ID')} × {parlayCalculation.multiplier.toFixed(3)} =</span>
+                       <span>{parlayCalculation.payout.toLocaleString('id-ID')}</span>
+                     </div>
+                   </div>
+                 </div>
+
                  <div className="flex justify-between items-end border-b border-white/5 pb-4">
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total Win</span>
                     <span className="text-3xl font-black font-orbitron text-white">Rp {parlayCalculation.payout.toLocaleString('id-ID')}</span>
