@@ -9,7 +9,7 @@ interface Props {
 
 const TogelPrediction: React.FC<Props> = ({ showToast }) => {
   const [market, setMarket] = useState(PASARAN_SCHEDULE[0].name);
-  const [shioOff, setShioOff] = useState('Kelinci');
+  const [shioOff, setShioOff] = useState(ZODIAC_ANIMALS[3]); // KELINCI
   const [result, setResult] = useState('');
 
   const generateRandomNumbers = (count: number, length: number) => {
