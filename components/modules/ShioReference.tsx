@@ -20,7 +20,7 @@ export default function ShioReference({ showToast }: {
     }
 
     // Urutan Shio Togel adalah Reverse Zodiac (Mundur)
-    // Shio tahun ini selalu mendapatkan index 0 (angka 00, 12, 24...)
+    // Shio tahun ini selalu mendapatkan urutan ke-1 (angka 01, 13, 25...)
     const reversedZodiac = [...ZODIAC_ANIMALS].reverse();
     const anchorIndex = reversedZodiac.indexOf(currentLunar.animal);
     
@@ -38,10 +38,15 @@ export default function ShioReference({ showToast }: {
 
   const getNumbersForIndex = (index: number) => {
     const nums = [];
-    for (let i = index; i <= 99; i += 12) {
-      nums.push(i.toString().padStart(2, '0'));
+    // Standard Togel Shio: Current Year Shio starts at 01, 13, 25...
+    // The sequence follows the shifted list (index 0 is current year)
+    const startNum = index + 1;
+    for (let i = startNum; i <= 100; i += 12) {
+      // 100 becomes 00
+      const n = i === 100 ? 0 : i;
+      nums.push(n.toString().padStart(2, '0'));
     }
-    return nums;
+    return nums.sort((a, b) => parseInt(a) - parseInt(b));
   };
 
   return (
@@ -85,7 +90,7 @@ export default function ShioReference({ showToast }: {
                   )}
                 </div>
                 <div className="w-10 h-10 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-center text-[11px] font-black text-zinc-600 group-hover:text-[var(--primary-color)] transition-colors">
-                  {i.toString().padStart(2, '0')}
+                  {(i + 1).toString().padStart(2, '0')}
                 </div>
               </div>
 
