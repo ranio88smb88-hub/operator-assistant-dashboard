@@ -73,6 +73,7 @@ export default function PasaranSchedule({ showToast }: {
               <tr className="border-b border-white/10">
                 <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest">No</th>
                 <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest">Nama Pasaran</th>
+                <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Hari</th>
                 <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Bet Close</th>
                 <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Jam Tutup</th>
                 <th className="px-6 py-4 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Prize</th>
@@ -92,6 +93,9 @@ export default function PasaranSchedule({ showToast }: {
                         {p.name}
                         {isDone && <CheckCircle className="w-3 h-3 ml-2 text-emerald-500" />}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-tighter">{p.days}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="text-rose-400 font-mono text-xs font-black px-2 py-1 rounded bg-rose-500/5">{p.betClose}</span>
