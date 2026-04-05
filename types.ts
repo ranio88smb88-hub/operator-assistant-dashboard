@@ -34,6 +34,7 @@ export interface AppSettings {
 export interface PasaranData {
   id: string;
   name: string;
+  days: string;
   betClose: string;
   open: string; // Jam Tutup / Result
   status: 'Open' | 'Closed';
