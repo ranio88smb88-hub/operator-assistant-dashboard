@@ -11,10 +11,11 @@ interface ColorTheme {
   primary: string;
   secondary: string;
   glow: string;
+  tdColor?: string;
 }
 
 const COLOR_THEMES: ColorTheme[] = [
-  { name: 'Luxury Gold', primary: '#3a321a', secondary: '#d4af37', glow: '#FFD700' },
+  { name: 'Luxury Gold', primary: '#1a1a1a', secondary: '#d1c462', glow: '#FFD700', tdColor: '#FFB81C' },
   { name: 'Cyber Blue', primary: '#0a1a2a', secondary: '#00d2ff', glow: '#00f2ff' },
   { name: 'Blood Red', primary: '#2a0505', secondary: '#ff3e3e', glow: '#ff9999' },
   { name: 'Emerald Green', primary: '#052a05', secondary: '#00ff88', glow: '#aaffcc' },
@@ -119,7 +120,7 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     .date { text-align: center; font-size: 16px; color: ${theme.glow}; margin-bottom: 15px; font-weight: bold; background: linear-gradient(45deg, ${theme.primary}, ${theme.secondary}); padding: 8px; border-radius: 5px; font-family: Arial, sans-serif; }
     .prediction-table { width: 100%; border-collapse: collapse; margin: 15px 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, ${theme.primary}, #2a0a0a); font-size: 14px; font-family: Arial, sans-serif; }
     .prediction-table th { background: linear-gradient(45deg, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; text-align: center; padding: 12px 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid ${theme.glow}; }
-    .prediction-table td { text-align: center; padding: 10px 8px; color: ${theme.glow}; border-bottom: 1px solid #333; background: rgba(0, 0, 0, 0.7); }
+    .prediction-table td { text-align: center; padding: 10px 8px; color: ${theme.tdColor || theme.glow}; border-bottom: 1px solid #333; background: rgba(0, 0, 0, 0.7); }
     .prediction-table tr:nth-child(even) td { background: rgba(30, 0, 0, 0.7); }
     .prediction-table tr:hover td { background: rgba(139, 0, 0, 0.5); color: ${theme.glow}; }
     
