@@ -14,12 +14,12 @@ interface ColorTheme {
 }
 
 const COLOR_THEMES: ColorTheme[] = [
-  { name: 'Luxury Gold', primary: '#1a1a1a', secondary: '#d1c462', glow: '#FFD700' },
-  { name: 'Cyber Blue', primary: '#0a0a1a', secondary: '#00f2ff', glow: '#ffffff' },
-  { name: 'Blood Red', primary: '#1a0505', secondary: '#ff3e3e', glow: '#ffffff' },
-  { name: 'Emerald Green', primary: '#051a05', secondary: '#00ff88', glow: '#ffffff' },
-  { name: 'Royal Purple', primary: '#10051a', secondary: '#bc13fe', glow: '#ffffff' },
-  { name: 'Neon Orange', primary: '#1a1005', secondary: '#ff8c00', glow: '#ffffff' },
+  { name: 'Luxury Gold', primary: '#3a321a', secondary: '#d4af37', glow: '#FFD700' },
+  { name: 'Cyber Blue', primary: '#0a1a2a', secondary: '#00d2ff', glow: '#00f2ff' },
+  { name: 'Blood Red', primary: '#2a0505', secondary: '#ff3e3e', glow: '#ff9999' },
+  { name: 'Emerald Green', primary: '#052a05', secondary: '#00ff88', glow: '#aaffcc' },
+  { name: 'Royal Purple', primary: '#1a052a', secondary: '#bc13fe', glow: '#e0aaff' },
+  { name: 'Neon Orange', primary: '#2a1a05', secondary: '#ff8c00', glow: '#ffcc99' },
 ];
 
 interface MatchData {
@@ -45,12 +45,12 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     let currentLeague = '';
 
     lines.forEach(line => {
-      const isMatchLine = line.match(/\d{2}\/\d{2}\s\d{2}:\d{2}/);
+      const isMatchLine = line.match(/\d{2}\/\d{2}\s\d{2}[:.]\d{2}/);
       
       if (!isMatchLine) {
         currentLeague = line.toUpperCase();
       } else {
-        const match = line.match(/(\d{2}\/\d{2})\s(\d{2}:\d{2})\sWIB\s(.+?)\s(\d+\s:\s\d+)/);
+        const match = line.match(/(\d{2}\/\d{2})\s(\d{2}[:.]\d{2})\sWIB\s(.+?)\s(\d+\s:\s\d+)/);
         if (match && currentLeague) {
           const [_, date, time, teams, score] = match;
           let leagueGroup = data.find(d => d.league === currentLeague);
@@ -67,7 +67,7 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
   };
 
   const getFormattedDate = (dateStr: string) => {
-    if (!dateStr) return "⚽ PREDIKSI BOLA HARI INI ⚽";
+    if (!dateStr) return "⚽ SABTU, 11 APRIL 2026 ⚽";
     try {
       const [day, month] = dateStr.split('/');
       const year = new Date().getFullYear();
@@ -79,9 +79,9 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
       const dayName = days[dateObj.getDay()];
       const monthName = months[dateObj.getMonth()];
       
-      return `⚽ ${dayName}, ${day} ${monthName} ${year} ⚽`;
+      return `⚽ ${dayName}, ${parseInt(day)} ${monthName} ${year} ⚽`;
     } catch (e) {
-      return "⚽ PREDIKSI BOLA HARI INI ⚽";
+      return "⚽ SABTU, 11 APRIL 2026 ⚽";
     }
   };
 
@@ -104,57 +104,35 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     parsedData.forEach(group => {
       tablesHtml += `
 <table class="prediction-table">
-<thead>
-<tr>
-<th colspan="3">${group.league}</th>
-</tr>
-<tr>
-<th>TANGGAL & WAKTU</th>
-<th>PERTANDINGAN</th>
-<th>SKOR</th>
-</tr>
-</thead>
-<tbody>`;
-      group.matches.forEach(m => {
-        tablesHtml += `
-<tr>
-<td>${m.date} ${m.time}</td>
-<td>${m.teams}</td>
-<td>${m.score}</td>
-</tr>`;
-      });
-      tablesHtml += `
-</tbody>
+    <thead>
+        <tr><th colspan="3">${group.league}</th></tr>
+        <tr><th>TANGGAL &amp; WAKTU</th><th>PERTANDINGAN</th><th>SKOR</th></tr>
+    </thead>
+    <tbody>
+        ${group.matches.map(m => `<tr><td colspan="3">${m.date} ${m.time} ${m.teams} ${m.score}</td></tr>`).join('')}
+    </tbody>
 </table>`;
     });
 
-    const fullHTML = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
+    const fullHTML = `
 <style>
-    body { background-color: #050505; margin: 0; padding: 20px; font-family: 'Arial', sans-serif; }
-    .date { text-align: center; font-size: 16px; color: ${theme.glow}; margin-bottom: 15px; font-weight: bold; background: linear-gradient(45deg, ${theme.primary}, ${theme.secondary}); padding: 8px; border-radius: 5px; }
-    .prediction-table { width: 100%; border-collapse: collapse; margin: 15px 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, ${theme.primary}, #2a0a0a); font-size: 14px; }
+    .date { text-align: center; font-size: 16px; color: ${theme.glow}; margin-bottom: 15px; font-weight: bold; background: linear-gradient(45deg, ${theme.primary}, ${theme.secondary}); padding: 8px; border-radius: 5px; font-family: Arial, sans-serif; }
+    .prediction-table { width: 100%; border-collapse: collapse; margin: 15px 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, ${theme.primary}, #2a0a0a); font-size: 14px; font-family: Arial, sans-serif; }
     .prediction-table th { background: linear-gradient(45deg, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; text-align: center; padding: 12px 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid ${theme.glow}; }
-    .prediction-table td { text-align: center; padding: 10px 8px; color: ${theme.secondary}; border-bottom: 1px solid #333; background: rgba(0, 0, 0, 0.7); }
+    .prediction-table td { text-align: center; padding: 10px 8px; color: ${theme.glow}; border-bottom: 1px solid #333; background: rgba(0, 0, 0, 0.7); }
     .prediction-table tr:nth-child(even) td { background: rgba(30, 0, 0, 0.7); }
     .prediction-table tr:hover td { background: rgba(139, 0, 0, 0.5); color: ${theme.glow}; }
-    .marquee { overflow: hidden; white-space: nowrap; background: linear-gradient(90deg, ${theme.primary}, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 5px; margin-bottom: 15px; }
+    .marquee { overflow: hidden; white-space: nowrap; background: linear-gradient(90deg, ${theme.primary}, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 5px; margin-bottom: 15px; font-family: Arial, sans-serif; }
     .marquee p { display: inline-block; animation: marquee 20s linear infinite; padding-left: 100%; margin: 0; }
     @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
     @media (max-width: 768px) { .prediction-table { font-size: 12px; } .prediction-table th, .prediction-table td { padding: 8px 5px; font-size: 11px; } }
     @media (max-width: 480px) { .prediction-table { font-size: 10px; } .prediction-table th, .prediction-table td { padding: 6px 3px; font-size: 9px; } }
 </style>
-</head>
-<body>
-    <div class="date">${dateHeader}</div>
-    <div class="marquee">
-        <p>🌟 DAFTAR & PASANG TARUHAN ANDA DI LIGABANDOT - PREDIKSI TERAKURAT SETIAP HARI! 🌟</p>
-    </div>
-    ${tablesHtml}
-</body>
-</html>`.trim();
+
+<div class="date">${dateHeader}</div>
+<div class="marquee"><p>🌟 DAFTAR &amp; PASANG TARUHAN ANDA DI LIGABANDOT - PREDIKSI TERAKURAT SETIAP HARI! 🌟</p></div>
+${tablesHtml}
+`.trim();
 
     setGeneratedHTML(fullHTML);
     setOutputMode('preview');
