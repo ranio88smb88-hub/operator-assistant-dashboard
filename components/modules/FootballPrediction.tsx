@@ -106,10 +106,10 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
 <table class="prediction-table">
     <thead>
         <tr><th colspan="3">${group.league}</th></tr>
-        <tr><th>TANGGAL &amp; WAKTU</th><th>PERTANDINGAN</th><th>SKOR</th></tr>
+        <tr><th class="date-column">TANGGAL &amp; WAKTU</th><th class="match-column">PERTANDINGAN</th><th class="score-column">SKOR</th></tr>
     </thead>
     <tbody>
-        ${group.matches.map(m => `<tr><td colspan="3">${m.date} ${m.time} ${m.teams} ${m.score}</td></tr>`).join('')}
+        ${group.matches.map(m => `<tr><td class="date-column">${m.date} ${m.time}</td><td class="match-column">${m.teams}</td><td class="score-column">${m.score}</td></tr>`).join('')}
     </tbody>
 </table>`;
     });
@@ -122,6 +122,11 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     .prediction-table td { text-align: center; padding: 10px 8px; color: ${theme.glow}; border-bottom: 1px solid #333; background: rgba(0, 0, 0, 0.7); }
     .prediction-table tr:nth-child(even) td { background: rgba(30, 0, 0, 0.7); }
     .prediction-table tr:hover td { background: rgba(139, 0, 0, 0.5); color: ${theme.glow}; }
+    
+    .date-column { width: 25%; }
+    .match-column { width: 55%; }
+    .score-column { width: 20%; }
+
     .marquee { overflow: hidden; white-space: nowrap; background: linear-gradient(90deg, ${theme.primary}, ${theme.secondary}, ${theme.primary}); color: ${theme.glow}; padding: 12px 0; font-size: 16px; font-weight: bold; border-radius: 5px; margin-bottom: 15px; font-family: Arial, sans-serif; }
     .marquee p { display: inline-block; animation: marquee 20s linear infinite; padding-left: 100%; margin: 0; }
     @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
