@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download, RefreshCw, Image as ImageIcon, Type, Sparkles, Layout, Palette } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { PASARAN_SCHEDULE, SYAIR_SENTENCES } from '../../constants';
 
 interface Props {
@@ -78,6 +77,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
     if (!previewRef.current) return;
     setIsGenerating(true);
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(previewRef.current, {
         useCORS: true,
         scale: 2,
