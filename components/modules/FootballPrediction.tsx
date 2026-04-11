@@ -46,20 +46,51 @@ const FootballPrediction: React.FC<Props> = ({ showToast }) => {
     let currentLeague = '';
 
     lines.forEach(line => {
-      const isMatchLine = line.match(/\d{2}\/\d{2}\s\d{2}[:.]\d{2}/);
+      // Check if line starts with a date pattern (DD/MM HH:mm)
+      const dateMatch = line.match(/^(\d{2}\/\d{2})\s+(\d{2}[:.]\d{2})/);
       
-      if (!isMatchLine) {
+      if (!dateMatch) {
+        // If it doesn't look like a match line, it's probably a league name
         currentLeague = line.toUpperCase();
       } else {
-        const match = line.match(/(\d{2}\/\d{2})\s(\d{2}[:.]\d{2})\sWIB\s(.+?)\s(\d+\s:\s\d+)/);
-        if (match && currentLeague) {
-          const [_, date, time, teams, score] = match;
+        // It's a match line, let's try to extract details
+        // Pattern: [Date] [Time] [Optional TZ] [Teams] [Score]
+        // Example 1: 12/04 21:00 WIB [14] Crystal Palace VS [12] Newcastle United 2-0
+        // Example 2: 14/02 02:45 WIB Pisa VS AC Milan 1 : 2
+        
+        const date = dateMatch[1];
+        const time = dateMatch[2];
+        
+        // Remove date and time from the line to parse the rest
+        let remaining = line.replace(dateMatch[0], '').trim();
+        
+        // Check for timezone (e.g., WIB)
+        let tz = '';
+        const tzMatch = remaining.match(/^([A-Z]{3,4})\s+/);
+        if (tzMatch) {
+          tz = tzMatch[1];
+          remaining = remaining.replace(tzMatch[0], '').trim();
+        }
+
+        // Try to find the score at the end of the line
+        // Formats: "2-0", "1 : 2", "1:2", "1 - 2"
+        const scoreMatch = remaining.match(/(\d+[\s:-]+\d+)$/);
+        
+        if (scoreMatch && currentLeague) {
+          const score = scoreMatch[1].trim().replace(/\s+/g, ' '); // Normalize score format
+          const teams = remaining.replace(scoreMatch[0], '').trim();
+          
           let leagueGroup = data.find(d => d.league === currentLeague);
           if (!leagueGroup) {
             leagueGroup = { league: currentLeague, matches: [] };
             data.push(leagueGroup);
           }
-          leagueGroup.matches.push({ date, time: time + ' WIB', teams, score });
+          leagueGroup.matches.push({ 
+            date, 
+            time: tz ? `${time} ${tz}` : time, 
+            teams, 
+            score 
+          });
         }
       }
     });
