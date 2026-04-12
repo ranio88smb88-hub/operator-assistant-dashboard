@@ -55,7 +55,24 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
   const goldTextShadow = '0 2px 4px rgba(0,0,0,0.8)';
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(1200);
   const previewRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const scale = Math.min(1, containerWidth / 1200);
 
   const handleRandomize = () => {
     const randomSyair = SYAIR_SENTENCES[Math.floor(Math.random() * SYAIR_SENTENCES.length)];
@@ -249,11 +266,14 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
             </div>
 
             {/* The Canvas Container */}
-            <div className="syair-preview-container relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 group bg-zinc-950">
+            <div 
+              ref={containerRef}
+              className="relative w-full max-w-4xl aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 mx-auto"
+            >
               <div 
                 ref={previewRef}
-                className="syair-preview-content w-[1200px] h-[480px] relative overflow-hidden bg-black select-none"
-                style={{ transform: 'scale(var(--preview-scale))', transformOrigin: 'top left' }}
+                className="absolute top-0 left-0 w-[1200px] h-[480px] bg-black select-none origin-top-left"
+                style={{ transform: `scale(${scale})` }}
               >
                 {/* Background */}
                 <img 
@@ -330,13 +350,13 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
 
                 {/* Center: Character */}
-                <div className="absolute left-[45%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[450px] z-10">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[480px] z-10 pointer-events-none">
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute inset-0 blur-[120px] rounded-full animate-pulse" style={{ backgroundColor: `#BF953F20` }}></div>
+                    <div className="absolute inset-0 blur-[120px] rounded-full opacity-25" style={{ backgroundColor: `#BF953F` }}></div>
                     <img 
                       src={data.character} 
                       className="max-w-full max-h-full object-contain relative z-10" 
-                      style={{ filter: `drop-shadow(0 0 40px #BF953F33)` }}
+                      style={{ filter: `drop-shadow(0 0 40px rgba(191, 149, 63, 0.4))` }}
                       alt="character" 
                       referrerPolicy="no-referrer"
                     />
@@ -412,27 +432,6 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
               </div>
 
-              {/* Scale Helper for Preview */}
-              <style>{`
-                .syair-preview-container {
-                  --preview-scale: 1;
-                }
-                @media (min-width: 1024px) {
-                  .syair-preview-container { 
-                    --preview-scale: clamp(0.1, (100% / 1200), 1); 
-                  }
-                }
-                @media (max-width: 1023px) {
-                  .syair-preview-container { 
-                    --preview-scale: clamp(0.1, (100% / 1200), 1); 
-                  }
-                }
-                .syair-preview-content {
-                  transform: scale(var(--preview-scale));
-                  width: 1200px;
-                  height: 480px;
-                }
-              `}</style>
             </div>
           </div>
         </div>
