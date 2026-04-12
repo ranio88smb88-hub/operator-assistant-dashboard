@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ModuleType, AppSettings } from './types';
 import Navbar from './components/Navbar';
@@ -19,7 +18,6 @@ import Toast from './components/ui/Toast';
 import ModuleNavigator from './components/ModuleNavigator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PASARAN_SCHEDULE } from './constants';
-import DigitalClock from './components/ui/DigitalClock';
 
 const DEFAULT_SETTINGS: AppSettings = {
   primaryColor: '#00ff00',
@@ -39,97 +37,6 @@ const DEFAULT_SETTINGS: AppSettings = {
     [ModuleType.SLOT_WIN_CALC]: { title: 'WIN TRACKER', image: 'https://assets.codepen.io/3617690/cyberpunk-character-alt-2.png' },
   }
 };
-
-const CustomCursor: React.FC<{ color: string }> = ({ color }) => {
-  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
-  const [isPointer, setIsPointer] = useState(false);
-  const [isTouch, setIsTouch] = useState(false);
-
-  useEffect(() => {
-    const checkTouch = () => {
-      setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    };
-    checkTouch();
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-      
-      const target = e.target as HTMLElement;
-      if (target) {
-        const computedCursor = window.getComputedStyle(target).cursor;
-        setIsPointer(computedCursor === 'pointer' || ['BUTTON', 'A', 'SELECT', 'INPUT'].includes(target.tagName));
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  if (isTouch) return null;
-
-  return (
-    <>
-      <style>{`
-        @media (hover: hover) and (pointer: fine) {
-          body, a, button, input, textarea, [role="button"] { cursor: none !important; }
-        }
-      `}</style>
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999]"
-        animate={{
-          x: mousePos.x - 2,
-          y: mousePos.y - 2,
-          scale: isPointer ? 1.2 : 1,
-        }}
-        transition={{ type: 'spring', damping: 35, stiffness: 1000, mass: 0.1 }}
-      >
-        <img 
-          src="https://cdn.cursors-4u.net/css-previews/equip-3df704c7-css.webp" 
-          alt="cursor"
-          className="w-8 h-8 object-contain"
-          style={{ 
-            filter: isPointer ? `drop-shadow(0 0 4px ${color})` : 'none',
-          }}
-          referrerPolicy="no-referrer"
-        />
-      </motion.div>
-    </>
-  );
-};
-
-const ElectricFilter: React.FC = () => (
-  <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
-    <defs>
-      <filter id="turbulent-displace" colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" result="noise1" seed="1" />
-        <feOffset in="noise1" dx="0" dy="0" result="offsetNoise1">
-          <animate attributeName="dy" values="700; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
-        </feOffset>
-
-        <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" result="noise2" seed="1" />
-        <feOffset in="noise2" dx="0" dy="0" result="offsetNoise2">
-          <animate attributeName="dy" values="0; -700" dur="6s" repeatCount="indefinite" calcMode="linear" />
-        </feOffset>
-
-        <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" result="noise1" seed="2" />
-        <feOffset in="noise1" dx="0" dy="0" result="offsetNoise3">
-          <animate attributeName="dx" values="490; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
-        </feOffset>
-
-        <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="3" result="noise2" seed="2" />
-        <feOffset in="noise2" dx="0" dy="0" result="offsetNoise4">
-          <animate attributeName="dx" values="0; -490" dur="6s" repeatCount="indefinite" calcMode="linear" />
-        </feOffset>
-
-        <feComposite in="offsetNoise1" in2="offsetNoise2" result="part1" />
-        <feComposite in="offsetNoise3" in2="offsetNoise4" result="part2" />
-        <feBlend in="part1" in2="part2" mode="color-dodge" result="combinedNoise" />
-
-        <feDisplacementMap in="SourceGraphic" in2="combinedNoise" scale="25" xChannelSelector="R" yChannelSelector="B" />
-      </filter>
-    </defs>
-  </svg>
-);
 
 const App: React.FC = () => {
   const [activeModule, setActiveModule] = useState<ModuleType | 'HOME'>('HOME');
@@ -254,9 +161,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col bg-[#050505] overflow-x-hidden">
-      <CustomCursor color={settings.primaryColor} />
-      <ElectricFilter />
+    <div className="relative min-h-screen w-full flex flex-col bg-[#050505]">
       {/* Background Image Layer */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-[0.15] mix-blend-screen pointer-events-none transition-all duration-1000 z-0"
@@ -282,10 +187,7 @@ const App: React.FC = () => {
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      <footer className="relative z-10 p-6 text-center border-t border-white/5 bg-black/80 flex flex-col items-center gap-4">
-        <div className="h-24 flex items-center justify-center">
-          <DigitalClock />
-        </div>
+      <footer className="relative z-10 p-6 text-center border-t border-white/5 bg-black/80">
         <p className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.4em]">
           Working Dashboard Management Console // Encrypted Node Active
         </p>
