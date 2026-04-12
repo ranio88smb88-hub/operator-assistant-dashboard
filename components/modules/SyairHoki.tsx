@@ -249,10 +249,10 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
             </div>
 
             {/* The Canvas Container */}
-            <div className="relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 group">
+            <div className="syair-preview-container relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 group bg-zinc-950">
               <div 
                 ref={previewRef}
-                className="w-[1200px] h-[480px] relative overflow-hidden bg-black select-none"
+                className="syair-preview-content w-[1200px] h-[480px] relative overflow-hidden bg-black select-none"
                 style={{ transform: 'scale(var(--preview-scale))', transformOrigin: 'top left' }}
               >
                 {/* Background */}
@@ -330,13 +330,13 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
 
                 {/* Center: Character */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[480px]">
+                <div className="absolute left-[45%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[450px] z-10">
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute inset-0 blur-[150px] rounded-full animate-pulse" style={{ backgroundColor: `#BF953F26` }}></div>
+                    <div className="absolute inset-0 blur-[120px] rounded-full animate-pulse" style={{ backgroundColor: `#BF953F20` }}></div>
                     <img 
                       src={data.character} 
-                      className="w-full h-full object-contain relative z-10" 
-                      style={{ filter: `drop-shadow(0 0 60px #BF953F4D)` }}
+                      className="max-w-full max-h-full object-contain relative z-10" 
+                      style={{ filter: `drop-shadow(0 0 40px #BF953F33)` }}
                       alt="character" 
                       referrerPolicy="no-referrer"
                     />
@@ -414,12 +414,23 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
 
               {/* Scale Helper for Preview */}
               <style>{`
-                :root { --preview-scale: 1; }
+                .syair-preview-container {
+                  --preview-scale: 1;
+                }
                 @media (min-width: 1024px) {
-                  .sticky { --preview-scale: ${Math.min(1, 800 / 1200)}; }
+                  .syair-preview-container { 
+                    --preview-scale: clamp(0.1, (100% / 1200), 1); 
+                  }
                 }
                 @media (max-width: 1023px) {
-                  .relative { --preview-scale: calc(100vw / 1200 * 0.9); }
+                  .syair-preview-container { 
+                    --preview-scale: clamp(0.1, (100% / 1200), 1); 
+                  }
+                }
+                .syair-preview-content {
+                  transform: scale(var(--preview-scale));
+                  width: 1200px;
+                  height: 480px;
                 }
               `}</style>
             </div>
