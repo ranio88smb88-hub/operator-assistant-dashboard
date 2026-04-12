@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, RefreshCw, Type, Sparkles, Palette } from 'lucide-react';
+import { Download, RefreshCw, Image as ImageIcon, Type, Sparkles, Layout, Palette } from 'lucide-react';
 import { PASARAN_SCHEDULE, SYAIR_SENTENCES } from '../../constants';
 
 interface Props {
@@ -15,8 +15,6 @@ interface SyairData {
   shio: string;
   quote: string;
   character: string;
-  rmin: string;
-  radi: string;
 }
 
 const CHARACTERS = [
@@ -41,28 +39,35 @@ const BACKGROUNDS = [
 const SyairHoki: React.FC<Props> = ({ showToast }) => {
   const [data, setData] = useState<SyairData>({
     pasaran: 'TOTO CAMBODIA',
-    date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase(),
+    date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }).toUpperCase(),
     bbfs: '4484450',
     angkaMain: '99000',
     fourD: '6562',
     shio: '9 / 5',
     quote: 'Menanti kesempatan dengan senyuman, angka-angka ini membawa harapan.',
     character: CHARACTERS[0].url,
-    rmin: '6562',
-    radi: '9/5',
   });
 
   const [bgImage, setBgImage] = useState(BACKGROUNDS[0].url);
-  const goldGradient = 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 30%, #B38728 50%, #FBF5B7 70%, #AA771C 100%)';
-  const goldTextShadow = '0 2px 6px rgba(0,0,0,0.5)';
+  const currentBg = BACKGROUNDS.find(bg => bg.url === bgImage) || BACKGROUNDS[0];
+  const accentColor = currentBg.accent;
+  const goldGradient = 'linear-gradient(to bottom, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)';
+  const goldTextShadow = '0 2px 4px rgba(0,0,0,0.8)';
 
   const [isGenerating, setIsGenerating] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(1200);
+  const [containerWidth, setContainerWidth] = useState(0);
   const previewRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
     
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
@@ -70,19 +75,21 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
       }
     });
     
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
+    if (containerRef.current) observer.observe(containerRef.current);
+    
+    return () => {
+      window.removeEventListener('resize', updateWidth);
+      observer.disconnect();
+    };
   }, []);
 
-  const scale = Math.min(1, containerWidth / 1200);
+  const scale = containerWidth > 0 ? Math.min(1, containerWidth / 1200) : 0.5;
 
   const handleRandomize = () => {
     const randomSyair = SYAIR_SENTENCES[Math.floor(Math.random() * SYAIR_SENTENCES.length)];
     const randomBBFS = Array.from({ length: 7 }, () => Math.floor(Math.random() * 10)).join('');
     const randomAM = Array.from({ length: 5 }, () => Math.floor(Math.random() * 10)).join('');
     const random4D = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)).join('');
-    const randomRmin = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)).join('');
-    const randomRadi = `${Math.floor(Math.random() * 12)}/${Math.floor(Math.random() * 10)}`;
     
     setData(prev => ({
       ...prev,
@@ -90,8 +97,6 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
       bbfs: randomBBFS,
       angkaMain: randomAM,
       fourD: random4D,
-      rmin: randomRmin,
-      radi: randomRadi,
     }));
     showToast('Data diacak secara mistis!', 'success');
   };
@@ -104,9 +109,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
       const canvas = await html2canvas(previewRef.current, {
         useCORS: true,
         scale: 2,
-        backgroundColor: '#000000',
-        logging: false,
-        allowTaint: false,
+        backgroundColor: '#000',
       });
       const link = document.createElement('a');
       link.download = `Syair-${data.pasaran}-${data.date}.png`;
@@ -210,27 +213,6 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[9px] text-zinc-500 uppercase font-bold mb-1 block">R.MIN</label>
-                  <input 
-                    type="text" 
-                    value={data.rmin}
-                    onChange={(e) => setData({...data, rmin: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="text-[9px] text-zinc-500 uppercase font-bold mb-1 block">RADI</label>
-                  <input 
-                    type="text" 
-                    value={data.radi}
-                    onChange={(e) => setData({...data, radi: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="text-[9px] text-zinc-500 uppercase font-bold mb-1 block">Syair / Pantun</label>
                 <textarea 
@@ -259,7 +241,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                       onClick={() => setData({...data, character: char.url})}
                       className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${data.character === char.url ? 'border-purple-500 scale-95' : 'border-transparent opacity-50 hover:opacity-100'}`}
                     >
-                      <img src={char.url} alt={char.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                      <img src={char.url} alt={char.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </button>
                   ))}
                 </div>
@@ -274,7 +256,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                       onClick={() => setBgImage(bg.url)}
                       className={`h-12 rounded-lg overflow-hidden border-2 transition-all ${bgImage === bg.url ? 'border-purple-500 scale-95' : 'border-transparent opacity-50 hover:opacity-100'}`}
                     >
-                      <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                      <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </button>
                   ))}
                 </div>
@@ -297,118 +279,175 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
             {/* The Canvas Container */}
             <div 
               ref={containerRef}
-              className="relative w-full max-w-4xl aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 mx-auto"
+              className="relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 mx-auto flex items-start justify-start"
             >
               <div 
                 ref={previewRef}
-                className="absolute top-0 left-0 w-[1200px] h-[480px] bg-black select-none origin-top-left"
-                style={{ transform: `scale(${scale})` }}
+                className="w-[1200px] h-[480px] bg-black select-none origin-top-left shrink-0"
+                style={{ 
+                  transform: `scale(${scale})`,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
+                }}
               >
                 {/* Background */}
                 <img 
                   src={bgImage} 
                   className="absolute inset-0 w-full h-full object-cover" 
                   alt="bg" 
-                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
                 />
                 
-                {/* Dark Overlay for better readability */}
-                <div className="absolute inset-0 bg-black/40"></div>
-                
-                {/* Subtle Vignette */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.6)_100%)]"></div>
+                {/* Subtle Vignette for readability */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.2)_100%)]"></div>
 
-                {/* Header Title */}
-                <div className="absolute top-6 left-8 z-10">
-                  <div className="flex flex-col items-start">
-                    <h1 className="text-2xl font-black tracking-tighter text-white drop-shadow-lg">SYAIR IMAGE GENERATOR</h1>
-                    <p className="text-[8px] text-amber-400/80 uppercase font-bold tracking-[0.3em]">AUTOMATIC VISUAL ORACLE // LIGBRANDED EDITION</p>
+                {/* Header */}
+                <div className="absolute top-6 left-10 flex flex-col items-start">
+                  <div className="flex items-center justify-start">
+                    <img 
+                      src="https://ligabandot.com/resources/images/logo.png" 
+                      className="h-16 w-auto object-contain" 
+                      style={{ filter: `drop-shadow(0 0 15px #BF953F66)` }}
+                      alt="LIGABANDOT LOGO" 
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
                 </div>
 
-                {/* Logo */}
-                <div className="absolute top-6 right-8 z-10">
-                  <img 
-                    src="https://ligabandot.com/resources/images/logo.png" 
-                    className="h-12 w-auto object-contain" 
-                    style={{ filter: `drop-shadow(0 0 10px rgba(191, 149, 63, 0.5))` }}
-                    alt="LIGABANDOT LOGO" 
-                    crossOrigin="anonymous"
-                  />
+                <div className="absolute top-6 right-10 text-right">
+                  <span className="text-3xl font-black font-fantasy tracking-tighter" 
+                    style={{ 
+                      backgroundImage: goldGradient,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      filter: `drop-shadow(${goldTextShadow})`
+                    }}
+                  >
+                    {data.date}
+                  </span>
                 </div>
 
                 {/* Left Side: Prediction Boxes */}
-                <div className="absolute left-8 top-32 space-y-2 z-10">
-                  <div className="text-[10px] font-bold text-amber-400/70 uppercase tracking-wider mb-1">T DRTAPREDIKSI</div>
-                  <div className="text-[8px] text-amber-400/50 uppercase tracking-wider">PRESIRIN</div>
-                  <div className="text-[8px] text-amber-400/50 uppercase tracking-wider mb-2">HOKIDRAW SD</div>
-                  
+                <div className="absolute left-10 top-1/2 -translate-y-1/2 space-y-4 z-20">
                   {[
-                    { label: 'BPS', value: data.bbfs },
-                    { label: 'A.MAIN', value: data.angkaMain },
+                    { label: 'BBFS', value: data.bbfs },
+                    { label: 'A.main', value: data.angkaMain },
                     { label: '4D', value: data.fourD },
-                    { label: 'SHIO', value: data.shio },
+                    { label: 'A.Shio', value: data.shio },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="w-14 h-8 bg-black/60 backdrop-blur-sm rounded-l-md flex items-center justify-center border border-r-0" style={{ borderColor: '#BF953F66' }}>
-                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">{item.label}</span>
+                    <div key={idx} className="flex items-center gap-4">
+                      <div className="w-24 h-12 bg-black/60 backdrop-blur-md rounded-l-xl flex items-center justify-center" style={{ borderColor: `#BF953F4D`, borderStyle: 'solid', borderWidth: '1px' }}>
+                        <span className="text-sm font-black uppercase tracking-widest font-fantasy"
+                          style={{ 
+                            backgroundImage: goldGradient,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+                          }}
+                        >
+                          {item.label}
+                        </span>
                       </div>
-                      <div className="w-32 h-8 bg-black/50 backdrop-blur-sm rounded-r-md flex items-center px-3 border border-l-0" style={{ borderColor: '#BF953F66' }}>
-                        <span className="text-base font-black tracking-wider text-amber-400 drop-shadow-lg">{item.value}</span>
+                      <div className="w-56 h-12 bg-black/40 backdrop-blur-md rounded-r-xl flex items-center px-6" style={{ borderColor: `#BF953F66`, borderStyle: 'solid', borderWidth: '1px' }}>
+                        <span className="text-2xl font-black font-medieval tracking-widest"
+                          style={{ 
+                            backgroundImage: goldGradient,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: `drop-shadow(${goldTextShadow})`
+                          }}
+                        >
+                          {item.value}
+                        </span>
                       </div>
                     </div>
                   ))}
-                  
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="text-[9px] font-bold text-amber-400/70 uppercase tracking-wider">R.MIN: {data.rmin}</div>
-                    <div className="text-[9px] font-bold text-amber-400/70 uppercase tracking-wider">RADI: {data.radi}</div>
-                  </div>
                 </div>
 
                 {/* Center: Character */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] z-0 pointer-events-none">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] z-0 pointer-events-none">
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute inset-0 blur-[80px] rounded-full opacity-30" style={{ backgroundColor: '#BF953F' }}></div>
+                    <div className="absolute inset-0 blur-[150px] rounded-full opacity-40" style={{ backgroundColor: `#BF953F` }}></div>
                     <img 
                       src={data.character} 
-                      className="max-w-full max-h-full object-contain relative z-0" 
-                      style={{ filter: `drop-shadow(0 0 30px rgba(191, 149, 63, 0.4))` }}
+                      className="max-w-full max-h-full object-contain relative z-0 opacity-95" 
+                      style={{ filter: `drop-shadow(0 0 60px rgba(191, 149, 63, 0.6))` }}
                       alt="character" 
-                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
                     />
                   </div>
                 </div>
 
                 {/* Right Side: Pasaran & Quote */}
-                <div className="absolute right-8 top-32 w-80 space-y-4 text-right z-10">
+                <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 space-y-6 text-right z-20">
                   <div className="space-y-1">
-                    <h4 className="text-4xl font-black tracking-tighter leading-tight text-amber-400 drop-shadow-lg">
+                    <span className="text-sm font-black uppercase tracking-[0.3em] font-fantasy"
+                      style={{ 
+                        backgroundImage: goldGradient,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
+                      }}
+                    >
+                      TOTO
+                    </span>
+                    <h4 className="text-5xl font-black font-fantasy tracking-tighter leading-none"
+                      style={{ 
+                        backgroundImage: goldGradient,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.8))'
+                      }}
+                    >
                       {data.pasaran}
                     </h4>
                   </div>
 
-                  <div className="bg-black/50 backdrop-blur-sm p-4 rounded-xl text-right relative border-l-4" style={{ borderLeftColor: '#BF953F' }}>
-                    <p className="text-sm font-medium italic leading-relaxed text-amber-400/90 drop-shadow">
+                  <div className="bg-black/60 backdrop-blur-md p-6 rounded-2xl text-right relative overflow-hidden shadow-2xl" style={{ borderColor: `#BF953F4D`, borderStyle: 'solid', borderWidth: '1px' }}>
+                    <div className="absolute top-0 right-0 w-1 h-full" style={{ backgroundColor: '#BF953F' }}></div>
+                    <p className="text-lg font-medium italic leading-relaxed font-medieval"
+                      style={{ 
+                        backgroundImage: goldGradient,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+                      }}
+                    >
                       "{data.quote}"
                     </p>
                   </div>
 
                   <div className="flex justify-end items-center gap-3">
-                    <div className="h-[1px] w-16 bg-gradient-to-l to-transparent" style={{ backgroundImage: `linear-gradient(to left, #BF953F, transparent)` }}></div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-amber-400/70">Official Prediction</span>
+                    <div className="h-[1px] w-20 bg-gradient-to-l to-transparent" style={{ backgroundImage: `linear-gradient(to left, #BF953F, transparent)` }}></div>
+                    <span className="text-[10px] font-black uppercase tracking-widest font-fantasy"
+                      style={{ 
+                        backgroundImage: goldGradient,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+                      }}
+                    >
+                      Official Prediction
+                    </span>
                   </div>
                 </div>
 
-                {/* Download Graphic Text */}
-                <div className="absolute bottom-4 left-8 z-10">
-                  <span className="text-[7px] font-bold text-amber-400/50 tracking-wider">DOWNLOAD GRAPHIC // 1200 X 480 PX // HD 1080P</span>
-                </div>
-
-                {/* Footer Text */}
-                <div className="absolute bottom-4 right-8 z-10 flex items-center gap-2">
-                  <span className="text-[7px] font-bold text-amber-400/50 tracking-[0.3em]">WWW.LIGABANDOT.COM</span>
+                {/* Footer Logo */}
+                <div className="absolute bottom-6 right-10 flex items-center gap-2">
+                  <span className="text-[8px] font-bold tracking-[0.5em]"
+                    style={{ 
+                      backgroundImage: goldGradient,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
+                    }}
+                  >
+                    WWW.LIGABANDOT.COM
+                  </span>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
