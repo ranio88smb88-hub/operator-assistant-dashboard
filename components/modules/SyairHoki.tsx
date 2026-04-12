@@ -53,8 +53,6 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
   const accentColor = currentBg.accent;
   const goldGradient = 'linear-gradient(to bottom, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)';
   const goldTextShadow = '0 2px 4px rgba(0,0,0,0.8)';
-  const boxBgDark = 'rgba(40, 35, 30, 0.9)';
-  const boxBgLight = 'rgba(120, 110, 90, 0.6)';
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [containerWidth, setContainerWidth] = useState(1200);
@@ -64,25 +62,31 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.getBoundingClientRect().width);
+        const width = containerRef.current.getBoundingClientRect().width;
+        if (width > 0) setContainerWidth(width);
       }
     };
 
-    // Initial measurement
-    setTimeout(updateWidth, 100);
+    // Initial measurement with multiple attempts to ensure accuracy
+    const timer1 = setTimeout(updateWidth, 100);
+    const timer2 = setTimeout(updateWidth, 500);
+    const timer3 = setTimeout(updateWidth, 1000);
     
     window.addEventListener('resize', updateWidth);
     
     const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        // Use the contentRect width for more accuracy
-        setContainerWidth(entry.contentRect.width);
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) setContainerWidth(width);
       }
     });
     
     if (containerRef.current) observer.observe(containerRef.current);
     
     return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
       window.removeEventListener('resize', updateWidth);
       observer.disconnect();
     };
@@ -341,7 +345,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                     { label: '4D', value: data.fourD },
                     { label: 'A.SHIO', value: data.shio },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center">
+                    <div key={idx} className="flex items-center shadow-lg">
                       <div className="w-24 h-14 flex items-center justify-center rounded-l-xl border-y border-l border-white/10" style={{ background: 'linear-gradient(to bottom, #2a2520, #1a1510)' }}>
                         <span className="text-sm font-black uppercase tracking-widest font-fantasy"
                           style={{ 
@@ -354,7 +358,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                           {item.label}
                         </span>
                       </div>
-                      <div className="w-52 h-14 flex items-center px-8 rounded-r-xl border-y border-r border-white/10 ml-[2px]" style={{ background: 'linear-gradient(to bottom, #786e5a, #4a453a)' }}>
+                      <div className="w-52 h-14 flex items-center px-8 rounded-r-xl border-y border-r border-white/10" style={{ background: 'linear-gradient(to bottom, #786e5a, #4a453a)', marginLeft: '-1px' }}>
                         <span className="text-2xl font-black font-medieval tracking-widest"
                           style={{ 
                             backgroundImage: goldGradient,
