@@ -57,22 +57,25 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
   const boxBgLight = 'rgba(120, 110, 90, 0.6)';
 
   const [isGenerating, setIsGenerating] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(1200);
   const previewRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
+        setContainerWidth(containerRef.current.getBoundingClientRect().width);
       }
     };
 
-    updateWidth();
+    // Initial measurement
+    setTimeout(updateWidth, 100);
+    
     window.addEventListener('resize', updateWidth);
     
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
+        // Use the contentRect width for more accuracy
         setContainerWidth(entry.contentRect.width);
       }
     });
@@ -85,6 +88,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
     };
   }, []);
 
+  // Ensure scale is never too small or too large initially
   const scale = containerWidth > 0 ? containerWidth / 1200 : 1;
 
   const handleRandomize = () => {
@@ -282,13 +286,14 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
             <div 
               ref={containerRef}
               className="relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 mx-auto"
+              style={{ minHeight: '150px' }}
             >
               <div 
                 ref={previewRef}
-                className="absolute top-1/2 left-1/2 w-[1200px] h-[480px] bg-black select-none"
+                className="absolute top-0 left-1/2 w-[1200px] h-[480px] bg-black select-none"
                 style={{ 
-                  transform: `translate(-50%, -50%) scale(${scale})`,
-                  transformOrigin: 'center'
+                  transform: `translateX(-50%) scale(${scale})`,
+                  transformOrigin: 'top center'
                 }}
               >
                 {/* Background */}
