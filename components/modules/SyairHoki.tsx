@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, RefreshCw, Image as ImageIcon, Type, Sparkles, Layout, Palette } from 'lucide-react';
+import { Download, RefreshCw, Type, Sparkles, Palette } from 'lucide-react';
 import { PASARAN_SCHEDULE, SYAIR_SENTENCES } from '../../constants';
 
 interface Props {
@@ -15,6 +15,8 @@ interface SyairData {
   shio: string;
   quote: string;
   character: string;
+  rmin: string;
+  radi: string;
 }
 
 const CHARACTERS = [
@@ -39,20 +41,20 @@ const BACKGROUNDS = [
 const SyairHoki: React.FC<Props> = ({ showToast }) => {
   const [data, setData] = useState<SyairData>({
     pasaran: 'TOTO CAMBODIA',
-    date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long' }).toUpperCase(),
+    date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase(),
     bbfs: '4484450',
     angkaMain: '99000',
     fourD: '6562',
     shio: '9 / 5',
     quote: 'Menanti kesempatan dengan senyuman, angka-angka ini membawa harapan.',
     character: CHARACTERS[0].url,
+    rmin: '6562',
+    radi: '9/5',
   });
 
   const [bgImage, setBgImage] = useState(BACKGROUNDS[0].url);
-  const currentBg = BACKGROUNDS.find(bg => bg.url === bgImage) || BACKGROUNDS[0];
-  const accentColor = currentBg.accent;
-  const goldGradient = 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%)';
-  const goldTextShadow = '0 2px 8px rgba(0,0,0,0.6)';
+  const goldGradient = 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 30%, #B38728 50%, #FBF5B7 70%, #AA771C 100%)';
+  const goldTextShadow = '0 2px 6px rgba(0,0,0,0.5)';
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [containerWidth, setContainerWidth] = useState(1200);
@@ -79,6 +81,8 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
     const randomBBFS = Array.from({ length: 7 }, () => Math.floor(Math.random() * 10)).join('');
     const randomAM = Array.from({ length: 5 }, () => Math.floor(Math.random() * 10)).join('');
     const random4D = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)).join('');
+    const randomRmin = Array.from({ length: 4 }, () => Math.floor(Math.random() * 10)).join('');
+    const randomRadi = `${Math.floor(Math.random() * 12)}/${Math.floor(Math.random() * 10)}`;
     
     setData(prev => ({
       ...prev,
@@ -86,6 +90,8 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
       bbfs: randomBBFS,
       angkaMain: randomAM,
       fourD: random4D,
+      rmin: randomRmin,
+      radi: randomRadi,
     }));
     showToast('Data diacak secara mistis!', 'success');
   };
@@ -100,6 +106,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
         scale: 2,
         backgroundColor: '#000000',
         logging: false,
+        allowTaint: false,
       });
       const link = document.createElement('a');
       link.download = `Syair-${data.pasaran}-${data.date}.png`;
@@ -203,6 +210,27 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[9px] text-zinc-500 uppercase font-bold mb-1 block">R.MIN</label>
+                  <input 
+                    type="text" 
+                    value={data.rmin}
+                    onChange={(e) => setData({...data, rmin: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] text-zinc-500 uppercase font-bold mb-1 block">RADI</label>
+                  <input 
+                    type="text" 
+                    value={data.radi}
+                    onChange={(e) => setData({...data, radi: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="text-[9px] text-zinc-500 uppercase font-bold mb-1 block">Syair / Pantun</label>
                 <textarea 
@@ -285,77 +313,62 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 />
                 
                 {/* Dark Overlay for better readability */}
-                <div className="absolute inset-0 bg-black/30"></div>
+                <div className="absolute inset-0 bg-black/40"></div>
                 
-                {/* Subtle Vignette for readability */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.4)_100%)]"></div>
+                {/* Subtle Vignette */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.6)_100%)]"></div>
 
-                {/* Header */}
-                <div className="absolute top-6 left-8 flex flex-col items-start z-10">
-                  <div className="flex items-center justify-start">
-                    <img 
-                      src="https://ligabandot.com/resources/images/logo.png" 
-                      className="h-14 w-auto object-contain" 
-                      style={{ filter: `drop-shadow(0 0 15px rgba(191, 149, 63, 0.5))` }}
-                      alt="LIGABANDOT LOGO" 
-                      crossOrigin="anonymous"
-                    />
+                {/* Header Title */}
+                <div className="absolute top-6 left-8 z-10">
+                  <div className="flex flex-col items-start">
+                    <h1 className="text-2xl font-black tracking-tighter text-white drop-shadow-lg">SYAIR IMAGE GENERATOR</h1>
+                    <p className="text-[8px] text-amber-400/80 uppercase font-bold tracking-[0.3em]">AUTOMATIC VISUAL ORACLE // LIGBRANDED EDITION</p>
                   </div>
                 </div>
 
-                <div className="absolute top-6 right-8 text-right z-10">
-                  <span className="text-2xl font-black tracking-tighter" 
-                    style={{ 
-                      backgroundImage: goldGradient,
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      textShadow: goldTextShadow
-                    }}
-                  >
-                    {data.date}
-                  </span>
+                {/* Logo */}
+                <div className="absolute top-6 right-8 z-10">
+                  <img 
+                    src="https://ligabandot.com/resources/images/logo.png" 
+                    className="h-12 w-auto object-contain" 
+                    style={{ filter: `drop-shadow(0 0 10px rgba(191, 149, 63, 0.5))` }}
+                    alt="LIGABANDOT LOGO" 
+                    crossOrigin="anonymous"
+                  />
                 </div>
 
                 {/* Left Side: Prediction Boxes */}
-                <div className="absolute left-8 top-1/2 -translate-y-1/2 space-y-3 z-10">
+                <div className="absolute left-8 top-32 space-y-2 z-10">
+                  <div className="text-[10px] font-bold text-amber-400/70 uppercase tracking-wider mb-1">T DRTAPREDIKSI</div>
+                  <div className="text-[8px] text-amber-400/50 uppercase tracking-wider">PRESIRIN</div>
+                  <div className="text-[8px] text-amber-400/50 uppercase tracking-wider mb-2">HOKIDRAW SD</div>
+                  
                   {[
-                    { label: 'BBFS', value: data.bbfs },
+                    { label: 'BPS', value: data.bbfs },
                     { label: 'A.MAIN', value: data.angkaMain },
                     { label: '4D', value: data.fourD },
                     { label: 'SHIO', value: data.shio },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-0">
-                      <div className="w-20 h-10 bg-black/70 backdrop-blur-sm rounded-l-lg flex items-center justify-center border border-r-0" style={{ borderColor: '#BF953F66' }}>
-                        <span className="text-xs font-black uppercase tracking-wider"
-                          style={{ 
-                            backgroundImage: goldGradient,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                          }}
-                        >
-                          {item.label}
-                        </span>
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="w-14 h-8 bg-black/60 backdrop-blur-sm rounded-l-md flex items-center justify-center border border-r-0" style={{ borderColor: '#BF953F66' }}>
+                        <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">{item.label}</span>
                       </div>
-                      <div className="w-40 h-10 bg-black/50 backdrop-blur-sm rounded-r-lg flex items-center px-4 border border-l-0" style={{ borderColor: '#BF953F66' }}>
-                        <span className="text-xl font-black tracking-wider"
-                          style={{ 
-                            backgroundImage: goldGradient,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            textShadow: goldTextShadow
-                          }}
-                        >
-                          {item.value}
-                        </span>
+                      <div className="w-32 h-8 bg-black/50 backdrop-blur-sm rounded-r-md flex items-center px-3 border border-l-0" style={{ borderColor: '#BF953F66' }}>
+                        <span className="text-base font-black tracking-wider text-amber-400 drop-shadow-lg">{item.value}</span>
                       </div>
                     </div>
                   ))}
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="text-[9px] font-bold text-amber-400/70 uppercase tracking-wider">R.MIN: {data.rmin}</div>
+                    <div className="text-[9px] font-bold text-amber-400/70 uppercase tracking-wider">RADI: {data.radi}</div>
+                  </div>
                 </div>
 
                 {/* Center: Character */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] z-0 pointer-events-none">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] z-0 pointer-events-none">
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute inset-0 blur-[80px] rounded-full opacity-40" style={{ backgroundColor: '#BF953F' }}></div>
+                    <div className="absolute inset-0 blur-[80px] rounded-full opacity-30" style={{ backgroundColor: '#BF953F' }}></div>
                     <img 
                       src={data.character} 
                       className="max-w-full max-h-full object-contain relative z-0" 
@@ -367,66 +380,33 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
 
                 {/* Right Side: Pasaran & Quote */}
-                <div className="absolute right-8 top-1/2 -translate-y-1/2 w-80 space-y-4 text-right z-10">
+                <div className="absolute right-8 top-32 w-80 space-y-4 text-right z-10">
                   <div className="space-y-1">
-                    <span className="text-xs font-black uppercase tracking-[0.3em]"
-                      style={{ 
-                        backgroundImage: goldGradient,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }}
-                    >
-                      TOTO
-                    </span>
-                    <h4 className="text-3xl font-black tracking-tighter leading-tight"
-                      style={{ 
-                        backgroundImage: goldGradient,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                      }}
-                    >
+                    <h4 className="text-4xl font-black tracking-tighter leading-tight text-amber-400 drop-shadow-lg">
                       {data.pasaran}
                     </h4>
                   </div>
 
-                  <div className="bg-black/60 backdrop-blur-md p-4 rounded-xl text-right relative overflow-hidden border-l-4" style={{ borderLeftColor: '#BF953F' }}>
-                    <p className="text-sm font-medium italic leading-relaxed"
-                      style={{ 
-                        backgroundImage: goldGradient,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }}
-                    >
+                  <div className="bg-black/50 backdrop-blur-sm p-4 rounded-xl text-right relative border-l-4" style={{ borderLeftColor: '#BF953F' }}>
+                    <p className="text-sm font-medium italic leading-relaxed text-amber-400/90 drop-shadow">
                       "{data.quote}"
                     </p>
                   </div>
 
                   <div className="flex justify-end items-center gap-3">
                     <div className="h-[1px] w-16 bg-gradient-to-l to-transparent" style={{ backgroundImage: `linear-gradient(to left, #BF953F, transparent)` }}></div>
-                    <span className="text-[8px] font-black uppercase tracking-widest"
-                      style={{ 
-                        backgroundImage: goldGradient,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }}
-                    >
-                      Official Prediction
-                    </span>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-amber-400/70">Official Prediction</span>
                   </div>
                 </div>
 
-                {/* Footer Logo */}
-                <div className="absolute bottom-4 right-8 flex items-center gap-2 z-10">
-                  <span className="text-[7px] font-bold tracking-[0.5em]"
-                    style={{ 
-                      backgroundImage: goldGradient,
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    WWW.LIGABANDOT.COM
-                  </span>
+                {/* Download Graphic Text */}
+                <div className="absolute bottom-4 left-8 z-10">
+                  <span className="text-[7px] font-bold text-amber-400/50 tracking-wider">DOWNLOAD GRAPHIC // 1200 X 480 PX // HD 1080P</span>
+                </div>
+
+                {/* Footer Text */}
+                <div className="absolute bottom-4 right-8 z-10 flex items-center gap-2">
+                  <span className="text-[7px] font-bold text-amber-400/50 tracking-[0.3em]">WWW.LIGABANDOT.COM</span>
                 </div>
               </div>
             </div>
