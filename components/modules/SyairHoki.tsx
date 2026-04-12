@@ -83,7 +83,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
     };
   }, []);
 
-  const scale = containerWidth > 0 ? Math.min(1, containerWidth / 1200) : 0.5;
+  const scale = containerWidth > 0 ? containerWidth / 1200 : 1;
 
   const handleRandomize = () => {
     const randomSyair = SYAIR_SENTENCES[Math.floor(Math.random() * SYAIR_SENTENCES.length)];
@@ -267,7 +267,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
 
         {/* Preview Panel */}
         <div className="lg:col-span-8">
-          <div className="sticky top-8">
+          <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -279,16 +279,14 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
             {/* The Canvas Container */}
             <div 
               ref={containerRef}
-              className="relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 mx-auto flex items-start justify-start"
+              className="relative w-full aspect-[1200/480] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 mx-auto"
             >
               <div 
                 ref={previewRef}
-                className="w-[1200px] h-[480px] bg-black select-none origin-top-left shrink-0"
+                className="absolute top-1/2 left-1/2 w-[1200px] h-[480px] bg-black select-none"
                 style={{ 
-                  transform: `scale(${scale})`,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0
+                  transform: `translate(-50%, -50%) scale(${scale})`,
+                  transformOrigin: 'center'
                 }}
               >
                 {/* Background */}
