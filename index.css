@@ -1,18 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Cinzel:wght@400;700;900&family=MedievalSharp&display=swap');
 @import "tailwindcss";
-
-* {
-  cursor: url('https://cdn.cursors-4u.net/css-previews/electricity-lightning-e3423565-css.webp') 8 4, auto !important;
-}
 
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
   --font-inter: "Inter", sans-serif;
+  --font-fantasy: "Cinzel", serif;
+  --font-medieval: "MedievalSharp", cursive;
 }
 
 @layer base {
   body {
-    @apply bg-[#050505] text-white font-inter antialiased overflow-x-hidden;
+    @apply bg-[#050505] text-white font-inter antialiased;
   }
 }
 
@@ -32,6 +30,69 @@
       rgba(0, 0, 0, 0.5) 50%
     );
     background-size: 100% 4px;
+  }
+
+  /* Electric Border Effect */
+  .electric-container {
+    padding: 2px;
+    position: relative;
+    background: linear-gradient(
+        -30deg,
+        var(--electric-gradient),
+        transparent,
+        var(--electric-gradient)
+      ),
+      linear-gradient(
+        to bottom,
+        #0a0a0a,
+        #0a0a0a
+      );
+  }
+
+  .electric-border-outer {
+    border: 2px solid var(--electric-border-alpha);
+    padding-right: 4px;
+    padding-bottom: 4px;
+  }
+
+  .electric-main-card {
+    filter: url(#turbulent-displace);
+    border: 2px solid var(--electric-color);
+    margin-top: -4px;
+    margin-left: -4px;
+  }
+
+  .electric-glow-1 {
+    border: 2px solid var(--electric-border-alpha-high);
+    filter: blur(1px);
+  }
+
+  .electric-glow-2 {
+    border: 2px solid var(--electric-color);
+    filter: blur(4px);
+  }
+
+  .electric-overlay {
+    mix-blend-mode: overlay;
+    filter: blur(16px);
+    background: linear-gradient(
+      -30deg,
+      white,
+      transparent 30%,
+      transparent 70%,
+      white
+    );
+  }
+
+  .electric-bg-glow {
+    filter: blur(32px);
+    opacity: 0.3;
+    background: linear-gradient(
+      -30deg,
+      var(--electric-color),
+      transparent,
+      var(--electric-color)
+    );
   }
 }
 
