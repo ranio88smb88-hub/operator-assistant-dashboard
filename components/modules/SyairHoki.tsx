@@ -51,8 +51,8 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
   const [bgImage, setBgImage] = useState(BACKGROUNDS[0].url);
   const currentBg = BACKGROUNDS.find(bg => bg.url === bgImage) || BACKGROUNDS[0];
   const accentColor = currentBg.accent;
-  const goldGradient = 'linear-gradient(to bottom, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)';
-  const goldTextShadow = '0 2px 4px rgba(0,0,0,0.8)';
+  const goldGradient = 'linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%)';
+  const goldTextShadow = '0 2px 8px rgba(0,0,0,0.6)';
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [containerWidth, setContainerWidth] = useState(1200);
@@ -98,7 +98,8 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
       const canvas = await html2canvas(previewRef.current, {
         useCORS: true,
         scale: 2,
-        backgroundColor: '#000',
+        backgroundColor: '#000000',
+        logging: false,
       });
       const link = document.createElement('a');
       link.download = `Syair-${data.pasaran}-${data.date}.png`;
@@ -230,7 +231,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                       onClick={() => setData({...data, character: char.url})}
                       className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${data.character === char.url ? 'border-purple-500 scale-95' : 'border-transparent opacity-50 hover:opacity-100'}`}
                     >
-                      <img src={char.url} alt={char.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={char.url} alt={char.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
                     </button>
                   ))}
                 </div>
@@ -245,7 +246,7 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                       onClick={() => setBgImage(bg.url)}
                       className={`h-12 rounded-lg overflow-hidden border-2 transition-all ${bgImage === bg.url ? 'border-purple-500 scale-95' : 'border-transparent opacity-50 hover:opacity-100'}`}
                     >
-                      <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" crossOrigin="anonymous" />
                     </button>
                   ))}
                 </div>
@@ -280,32 +281,35 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                   src={bgImage} 
                   className="absolute inset-0 w-full h-full object-cover" 
                   alt="bg" 
-                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                 />
                 
+                {/* Dark Overlay for better readability */}
+                <div className="absolute inset-0 bg-black/30"></div>
+                
                 {/* Subtle Vignette for readability */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.2)_100%)]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.4)_100%)]"></div>
 
                 {/* Header */}
-                <div className="absolute top-6 left-10 flex flex-col items-start">
+                <div className="absolute top-6 left-8 flex flex-col items-start z-10">
                   <div className="flex items-center justify-start">
                     <img 
                       src="https://ligabandot.com/resources/images/logo.png" 
-                      className="h-16 w-auto object-contain" 
-                      style={{ filter: `drop-shadow(0 0 15px #BF953F66)` }}
+                      className="h-14 w-auto object-contain" 
+                      style={{ filter: `drop-shadow(0 0 15px rgba(191, 149, 63, 0.5))` }}
                       alt="LIGABANDOT LOGO" 
-                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
                     />
                   </div>
                 </div>
 
-                <div className="absolute top-6 right-10 text-right">
-                  <span className="text-3xl font-black font-fantasy tracking-tighter" 
+                <div className="absolute top-6 right-8 text-right z-10">
+                  <span className="text-2xl font-black tracking-tighter" 
                     style={{ 
                       backgroundImage: goldGradient,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
-                      filter: `drop-shadow(${goldTextShadow})`
+                      textShadow: goldTextShadow
                     }}
                   >
                     {data.date}
@@ -313,33 +317,32 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
 
                 {/* Left Side: Prediction Boxes */}
-                <div className="absolute left-10 top-1/2 -translate-y-1/2 space-y-4">
+                <div className="absolute left-8 top-1/2 -translate-y-1/2 space-y-3 z-10">
                   {[
                     { label: 'BBFS', value: data.bbfs },
-                    { label: 'A.main', value: data.angkaMain },
+                    { label: 'A.MAIN', value: data.angkaMain },
                     { label: '4D', value: data.fourD },
-                    { label: 'A.Shio', value: data.shio },
+                    { label: 'SHIO', value: data.shio },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4">
-                      <div className="w-24 h-12 bg-black/60 backdrop-blur-md rounded-l-xl flex items-center justify-center" style={{ borderColor: `#BF953F4D`, borderStyle: 'solid', borderWidth: '1px' }}>
-                        <span className="text-sm font-black uppercase tracking-widest font-fantasy"
+                    <div key={idx} className="flex items-center gap-0">
+                      <div className="w-20 h-10 bg-black/70 backdrop-blur-sm rounded-l-lg flex items-center justify-center border border-r-0" style={{ borderColor: '#BF953F66' }}>
+                        <span className="text-xs font-black uppercase tracking-wider"
                           style={{ 
                             backgroundImage: goldGradient,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
                           }}
                         >
                           {item.label}
                         </span>
                       </div>
-                      <div className="w-56 h-12 bg-black/40 backdrop-blur-md rounded-r-xl flex items-center px-6" style={{ borderColor: `#BF953F66`, borderStyle: 'solid', borderWidth: '1px' }}>
-                        <span className="text-2xl font-black font-medieval tracking-widest"
+                      <div className="w-40 h-10 bg-black/50 backdrop-blur-sm rounded-r-lg flex items-center px-4 border border-l-0" style={{ borderColor: '#BF953F66' }}>
+                        <span className="text-xl font-black tracking-wider"
                           style={{ 
                             backgroundImage: goldGradient,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            filter: `drop-shadow(${goldTextShadow})`
+                            textShadow: goldTextShadow
                           }}
                         >
                           {item.value}
@@ -350,52 +353,49 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
 
                 {/* Center: Character */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[480px] z-10 pointer-events-none">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] z-0 pointer-events-none">
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute inset-0 blur-[120px] rounded-full opacity-25" style={{ backgroundColor: `#BF953F` }}></div>
+                    <div className="absolute inset-0 blur-[80px] rounded-full opacity-40" style={{ backgroundColor: '#BF953F' }}></div>
                     <img 
                       src={data.character} 
-                      className="max-w-full max-h-full object-contain relative z-10" 
-                      style={{ filter: `drop-shadow(0 0 40px rgba(191, 149, 63, 0.4))` }}
+                      className="max-w-full max-h-full object-contain relative z-0" 
+                      style={{ filter: `drop-shadow(0 0 30px rgba(191, 149, 63, 0.4))` }}
                       alt="character" 
-                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
                     />
                   </div>
                 </div>
 
                 {/* Right Side: Pasaran & Quote */}
-                <div className="absolute right-10 top-1/2 -translate-y-1/2 w-96 space-y-6 text-right">
+                <div className="absolute right-8 top-1/2 -translate-y-1/2 w-80 space-y-4 text-right z-10">
                   <div className="space-y-1">
-                    <span className="text-sm font-black uppercase tracking-[0.3em] font-fantasy"
+                    <span className="text-xs font-black uppercase tracking-[0.3em]"
                       style={{ 
                         backgroundImage: goldGradient,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
                       }}
                     >
                       TOTO
                     </span>
-                    <h4 className="text-5xl font-black font-fantasy tracking-tighter leading-none"
+                    <h4 className="text-3xl font-black tracking-tighter leading-tight"
                       style={{ 
                         backgroundImage: goldGradient,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.8))'
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
                       }}
                     >
                       {data.pasaran}
                     </h4>
                   </div>
 
-                  <div className="bg-black/60 backdrop-blur-md p-6 rounded-2xl text-right relative overflow-hidden shadow-2xl" style={{ borderColor: `#BF953F4D`, borderStyle: 'solid', borderWidth: '1px' }}>
-                    <div className="absolute top-0 right-0 w-1 h-full" style={{ backgroundColor: '#BF953F' }}></div>
-                    <p className="text-lg font-medium italic leading-relaxed font-medieval"
+                  <div className="bg-black/60 backdrop-blur-md p-4 rounded-xl text-right relative overflow-hidden border-l-4" style={{ borderLeftColor: '#BF953F' }}>
+                    <p className="text-sm font-medium italic leading-relaxed"
                       style={{ 
                         backgroundImage: goldGradient,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
                       }}
                     >
                       "{data.quote}"
@@ -403,13 +403,12 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                   </div>
 
                   <div className="flex justify-end items-center gap-3">
-                    <div className="h-[1px] w-20 bg-gradient-to-l to-transparent" style={{ backgroundImage: `linear-gradient(to left, #BF953F, transparent)` }}></div>
-                    <span className="text-[10px] font-black uppercase tracking-widest font-fantasy"
+                    <div className="h-[1px] w-16 bg-gradient-to-l to-transparent" style={{ backgroundImage: `linear-gradient(to left, #BF953F, transparent)` }}></div>
+                    <span className="text-[8px] font-black uppercase tracking-widest"
                       style={{ 
                         backgroundImage: goldGradient,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
                       }}
                     >
                       Official Prediction
@@ -418,20 +417,18 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
                 </div>
 
                 {/* Footer Logo */}
-                <div className="absolute bottom-6 right-10 flex items-center gap-2">
-                  <span className="text-[8px] font-bold tracking-[0.5em]"
+                <div className="absolute bottom-4 right-8 flex items-center gap-2 z-10">
+                  <span className="text-[7px] font-bold tracking-[0.5em]"
                     style={{ 
                       backgroundImage: goldGradient,
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))'
                     }}
                   >
                     WWW.LIGABANDOT.COM
                   </span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
