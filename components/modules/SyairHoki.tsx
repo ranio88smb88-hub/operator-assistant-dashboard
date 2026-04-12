@@ -80,8 +80,12 @@ const SyairHoki: React.FC<Props> = ({ showToast }) => {
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(previewRef.current, {
         useCORS: true,
+        allowTaint: true,
         scale: 2,
         backgroundColor: '#000',
+        logging: true,
+        width: 1200,
+        height: 480
       });
       const link = document.createElement('a');
       link.download = `Syair-${data.pasaran}-${data.date}.png`;
